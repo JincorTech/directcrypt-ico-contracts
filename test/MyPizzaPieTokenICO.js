@@ -6,8 +6,8 @@ const assertJump = function(error) {
   assert.isAbove(error.message.search('VM Exception while processing transaction: revert'), -1, 'Invalid opcode error must be returned');
 };
 
-const hardCap = 26600000; //in JCR
-const softCap = 2500000; //in JCR
+const hardCap = 26600000; //in PZA
+const softCap = 2500000; //in PZA
 const beneficiary = web3.eth.accounts[9];
 const ethUsdPrice = 20000; //in cents
 const btcUsdPrice = 400000; //in cents
@@ -610,19 +610,19 @@ contract('MyPizzaPieTokenICO', function (accounts) {
     await this.crowdsale.sendTransaction({value: 500 * 10 ** 18, from: accounts[2]});
 
     const oldBenBalanceEth = web3.eth.getBalance(beneficiary);
-    const oldIcoContractBalanceJcr = await this.token.balanceOf(this.crowdsale.address).valueOf();
+    const oldIcoContractBalancePza = await this.token.balanceOf(this.crowdsale.address).valueOf();
 
     await this.crowdsale.withdraw();
 
     const newBenBalanceEth = web3.eth.getBalance(beneficiary);
-    const newBenBalanceJcr = await this.token.balanceOf(beneficiary).valueOf();
-    const icoContractBalanceJcr = await this.token.balanceOf(this.crowdsale.address).valueOf();
+    const newBenBalancePza = await this.token.balanceOf(beneficiary).valueOf();
+    const icoContractBalancePza = await this.token.balanceOf(this.crowdsale.address).valueOf();
     const icoContractBalanceEth = web3.eth.getBalance(this.crowdsale.address);
 
-    assert.equal(icoContractBalanceJcr, 0);
+    assert.equal(icoContractBalancePza, 0);
     assert.equal(icoContractBalanceEth, 0);
     assert.equal(newBenBalanceEth.minus(oldBenBalanceEth).toNumber(), web3.toWei(12500));
-    assert.equal(newBenBalanceJcr.toNumber(), oldIcoContractBalanceJcr.toNumber());
+    assert.equal(newBenBalancePza.toNumber(), oldIcoContractBalancePza.toNumber());
   });
 
   it('should not allow purchase if ICO is ended', async function () {

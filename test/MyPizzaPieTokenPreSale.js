@@ -218,18 +218,18 @@ contract('MyPizzaPieTokenPresale', function (accounts) {
     await this.crowdsale.sendTransaction({value: 1 * 10 ** 18, from: accounts[2]});
 
     const oldBenBalanceEth = web3.eth.getBalance(beneficiary);
-    const oldBenBalanceJcr = await this.token.balanceOf(beneficiary).valueOf();
+    const oldBenBalancePza = await this.token.balanceOf(beneficiary).valueOf();
 
     await this.crowdsale.withdraw();
 
     const newBenBalanceEth = web3.eth.getBalance(beneficiary);
-    const newBenBalanceJcr = await this.token.balanceOf(beneficiary).valueOf();
-    const preSaleContractBalanceJcr = await this.token.balanceOf(this.crowdsale.address).valueOf();
+    const newBenBalancePza = await this.token.balanceOf(beneficiary).valueOf();
+    const preSaleContractBalancePza = await this.token.balanceOf(this.crowdsale.address).valueOf();
     const preSaleContractBalanceEth = web3.eth.getBalance(this.crowdsale.address);
 
     assert.equal(newBenBalanceEth > oldBenBalanceEth, true);
-    assert.equal(newBenBalanceJcr > oldBenBalanceJcr, true);
-    assert.equal(preSaleContractBalanceJcr, 0);
+    assert.equal(newBenBalancePza > oldBenBalancePza, true);
+    assert.equal(preSaleContractBalancePza, 0);
     assert.equal(preSaleContractBalanceEth, 0);
   });
 

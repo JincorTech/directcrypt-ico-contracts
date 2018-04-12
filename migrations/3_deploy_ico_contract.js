@@ -10,8 +10,8 @@ module.exports = function(deployer) {
   deployer.link(SafeMath, MyPizzaPieToken);
   deployer.link(SafeMath, MyPizzaPieTokenICO);
   deployer.deploy(MyPizzaPieToken).then(async function() {
-    const hardCap = 26600000; //in JCR
-    const softCap = 2500000; //in JCR
+    const hardCap = 26600000; //in PZA
+    const softCap = 2500000; //in PZA
     const token = MyPizzaPieToken.address;
     const beneficiary = web3.eth.accounts[0];
     const startBlock = web3.eth.blockNumber;

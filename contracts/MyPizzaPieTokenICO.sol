@@ -20,7 +20,7 @@ contract MyPizzaPieTokenICO is Haltable, PriceReceiver {
 
   InvestorWhiteList public investorWhiteList;
 
-  uint public constant jcrUsdRate = 100; //in cents
+  uint public constant pzaUsdRate = 100; //in cents
 
   uint public ethUsdRate;
 
@@ -87,8 +87,8 @@ contract MyPizzaPieTokenICO is Haltable, PriceReceiver {
   }
 
   function MyPizzaPieTokenICO(
-    uint _hardCapJCR,
-    uint _softCapJCR,
+    uint _hardCapPZA,
+    uint _softCapPZA,
     address _token,
     address _beneficiary,
     address _investorWhiteList,
@@ -98,8 +98,8 @@ contract MyPizzaPieTokenICO is Haltable, PriceReceiver {
     uint _startBlock,
     uint _endBlock
   ) {
-    hardCap = _hardCapJCR.mul(1 ether);
-    softCap = _softCapJCR.mul(1 ether);
+    hardCap = _hardCapPZA.mul(1 ether);
+    softCap = _softCapPZA.mul(1 ether);
 
     token = MyPizzaPieToken(_token);
     beneficiary = _beneficiary;
@@ -220,7 +220,7 @@ contract MyPizzaPieTokenICO is Haltable, PriceReceiver {
   function doPurchase() private icoActive inNormalState {
     require(!crowdsaleFinished);
 
-    uint tokens = msg.value.mul(ethUsdRate).div(jcrUsdRate);
+    uint tokens = msg.value.mul(ethUsdRate).div(pzaUsdRate);
     uint referralBonus = calculateReferralBonus(tokens);
     address referral = investorWhiteList.getReferralOf(msg.sender);
 
