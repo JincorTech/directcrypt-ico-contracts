@@ -1,5 +1,5 @@
-const JincorToken = artifacts.require("JincorToken");
-const JincorTokenPreSale = artifacts.require("JincorTokenPreSale");
+const MyPizzaPieToken = artifacts.require("MyPizzaPieToken");
+const MyPizzaPieTokenPreSale = artifacts.require("MyPizzaPieTokenPreSale");
 
 const assertJump = function(error) {
   assert.isAbove(error.message.search('VM Exception while processing transaction: revert'), -1, 'Invalid opcode error must be returned');
@@ -21,15 +21,15 @@ function advanceToBlock(number) {
   }
 }
 
-contract('JincorTokenPresale', function (accounts) {
+contract('MyPizzaPieTokenPresale', function (accounts) {
   beforeEach(async function () {
     this.startBlock = web3.eth.blockNumber;
     this.endBlock = web3.eth.blockNumber + 15;
 
-    this.token = await JincorToken.new();
+    this.token = await MyPizzaPieToken.new();
     const totalTokens = 2800; //NOT in wei, converted by contract
 
-    this.crowdsale = await JincorTokenPreSale.new(hardCap, softCap, this.token.address, beneficiary, totalTokens, ethUsdPrice, limit, this.startBlock, this.endBlock);
+    this.crowdsale = await MyPizzaPieTokenPreSale.new(hardCap, softCap, this.token.address, beneficiary, totalTokens, ethUsdPrice, limit, this.startBlock, this.endBlock);
     this.token.setTransferAgent(this.token.address, true);
     this.token.setTransferAgent(this.crowdsale.address, true);
     this.token.setTransferAgent(accounts[0], true);

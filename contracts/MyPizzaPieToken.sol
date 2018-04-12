@@ -4,16 +4,16 @@ import "./Burnable.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
 /**
- * @title JincorToken
+ * @title MyPizzaPieToken
  *
  * @dev Burnable Ownable ERC20 token
  */
-contract JincorToken is Burnable, Ownable {
+contract MyPizzaPieToken is Burnable, Ownable {
 
-  string public constant name = "Jincor Token";
-  string public constant symbol = "JCR";
+  string public constant name = "MyPizzaPie Token";
+  string public constant symbol = "PZA";
   uint8 public constant decimals = 18;
-  uint public constant INITIAL_SUPPLY = 35000000 * 1 ether;
+  uint public constant INITIAL_SUPPLY = 81192000 * 1 ether;
 
   /* The finalizer contract that allows unlift the transfer limits on this token */
   address public releaseAgent;
@@ -49,7 +49,7 @@ contract JincorToken is Burnable, Ownable {
   /**
    * @dev Constructor that gives msg.sender all of existing tokens.
    */
-  function JincorToken() {
+  function MyPizzaPieToken() {
     totalSupply_ = INITIAL_SUPPLY;
     balances[msg.sender] = INITIAL_SUPPLY;
   }

@@ -1,5 +1,5 @@
-const JincorToken = artifacts.require("JincorToken");
-const JincorTokenICO = artifacts.require("JincorTokenICO");
+const MyPizzaPieToken = artifacts.require("MyPizzaPieToken");
+const MyPizzaPieTokenICO = artifacts.require("MyPizzaPieTokenICO");
 const InvestorWhiteList = artifacts.require("InvestorWhiteList");
 
 const assertJump = function(error) {
@@ -24,15 +24,15 @@ function advanceToBlock(number) {
   }
 }
 
-contract('JincorTokenICO', function (accounts) {
+contract('MyPizzaPieTokenICO', function (accounts) {
   beforeEach(async function () {
     this.startBlock = web3.eth.blockNumber;
     this.endBlock = this.startBlock + 20;
 
-    this.token = await JincorToken.new();
+    this.token = await MyPizzaPieToken.new();
     this.whiteList = await InvestorWhiteList.new();
 
-    this.crowdsale = await JincorTokenICO.new(hardCap, softCap, this.token.address, beneficiary, this.whiteList.address, ethUsdPrice, btcUsdPrice, this.startBlock, this.endBlock);
+    this.crowdsale = await MyPizzaPieTokenICO.new(hardCap, softCap, this.token.address, beneficiary, this.whiteList.address, ethUsdPrice, btcUsdPrice, this.startBlock, this.endBlock);
     this.token.setTransferAgent(this.token.address, true);
     this.token.setTransferAgent(this.crowdsale.address, true);
     this.token.setTransferAgent(accounts[0], true);
