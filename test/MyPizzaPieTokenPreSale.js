@@ -1,15 +1,21 @@
 const MyPizzaPieToken = artifacts.require("MyPizzaPieToken");
 const MyPizzaPieTokenPreSale = artifacts.require("MyPizzaPieTokenPreSale");
+const InvestorWhiteList = artifacts.require("InvestorWhiteList");
 
 const assertJump = function(error) {
   assert.isAbove(error.message.search('VM Exception while processing transaction: revert'), -1, 'Invalid opcode error must be returned');
 };
 
-const hardCap = 700; //in USD
-const softCap = 500; //in USD
-const limit = 250; //in USD
+const hardCap = 700; //in cents
+const softCap = 500; //in cents
 const beneficiary = web3.eth.accounts[0];
-const ethUsdPrice = 250; //in USD
+const baseEthUsdPrice = 250; //in cents
+const baseBtcUsdPrice = 2500;
+const ethPriceProvider = web3.eth.accounts[8];
+const btcPriceProvider = web3.eth.accounts[7];
+const tokenMinimalPurchase = 25;
+const tokenPriceUsd = 10; //in cents
+const totalTokens = 50; //NOT in wei, converted by contract
 
 function advanceToBlock(number) {
   if (web3.eth.blockNumber > number) {
@@ -26,10 +32,28 @@ contract('MyPizzaPieTokenPresale', function (accounts) {
     this.startBlock = web3.eth.blockNumber;
     this.endBlock = web3.eth.blockNumber + 15;
 
-    this.token = await MyPizzaPieToken.new();
-    const totalTokens = 2800; //NOT in wei, converted by contract
+    this.whiteList = await InvestorWhiteList.new();
 
-    this.crowdsale = await MyPizzaPieTokenPreSale.new(hardCap, softCap, this.token.address, beneficiary, totalTokens, ethUsdPrice, limit, this.startBlock, this.endBlock);
+    this.token = await MyPizzaPieToken.new();
+
+    this.crowdsale = await MyPizzaPieTokenPreSale.new(
+      hardCap,
+      softCap,
+      this.token.address,
+      beneficiary,
+      this.whiteList.address,
+
+      totalTokens,
+      tokenMinimalPurchase,
+      tokenPriceUsd,
+
+      baseEthUsdPrice,
+      baseBtcUsdPrice,
+
+      this.startBlock,
+      this.endBlock
+    );
+
     this.token.setTransferAgent(this.token.address, true);
     this.token.setTransferAgent(this.crowdsale.address, true);
     this.token.setTransferAgent(accounts[0], true);
@@ -96,13 +120,14 @@ contract('MyPizzaPieTokenPresale', function (accounts) {
   });
 
   it('should send tokens to purchaser', async function () {
+    
     await this.crowdsale.sendTransaction({value: 1 * 10 ** 18, from: accounts[2]});
 
     const balance = await this.token.balanceOf(accounts[2]);
-    assert.equal(balance.valueOf(), 1000 * 10 ** 18);
+    assert.equal(balance.valueOf(), 25);
 
     const crowdsaleBalance = await this.token.balanceOf(this.crowdsale.address);
-    assert.equal(crowdsaleBalance.valueOf(), 4000 * 10 ** 18);
+    assert.equal(crowdsaleBalance.valueOf(), 4.999999999999999999998 * 10 ** 21);
 
     const collected = await this.crowdsale.collected();
     assert.equal(collected.valueOf(), 1 * 10 ** 18);
@@ -111,7 +136,7 @@ contract('MyPizzaPieTokenPresale', function (accounts) {
     assert.equal(investorCount, 1);
 
     const tokensSold = await this.crowdsale.tokensSold();
-    assert.equal(tokensSold.valueOf(), 1000 * 10 ** 18);
+    assert.equal(tokensSold.valueOf(), 25);
   });
 
   it('should not allow purchase when pre sale is halted', async function () {
@@ -134,8 +159,9 @@ contract('MyPizzaPieTokenPresale', function (accounts) {
     assert.fail('should have thrown before');
   });
 
-  it('should not allow to exceed purchase limit with 1 purchase', async function () {
-    const amount = ((limit / ethUsdPrice) + 1) * 10 ** 18;
+  it('should not allow to exceed purchase limit token', async function () {
+    
+    const amount = tokenPriceUsd/baseEthUsdPrice * (totalTokens + 1) * 10 ** 18;
 
     try {
       await this.crowdsale.sendTransaction({value: amount, from: accounts[2]});
@@ -145,15 +171,11 @@ contract('MyPizzaPieTokenPresale', function (accounts) {
     assert.fail('should have thrown before');
   });
 
-  it('should not allow to exceed purchase limit with 2 purchases', async function () {
-    await this.crowdsale.sendTransaction({value: 0.9 * 10 ** 18, from: accounts[2]});
-
-    try {
-      await this.crowdsale.sendTransaction({value: 0.11 * 10 ** 18, from: accounts[2]});
-    } catch (error) {
-      return assertJump(error);
-    }
-    assert.fail('should have thrown before');
+  it('should allow to exceed purchase limit token', async function () {
+    const amount = 2 * 10 ** 18;
+    await this.crowdsale.sendTransaction({value: amount, from: accounts[2]});
+    const balance = await this.token.balanceOf(accounts[2]);
+    assert.equal(balance.valueOf(), 50);
   });
 
   it('should set flag when softcap is reached', async function () {
@@ -285,7 +307,7 @@ contract('MyPizzaPieTokenPresale', function (accounts) {
   });
 
   it('should refund if cap is not reached and pre sale is ended', async function () {
-    await this.crowdsale.sendTransaction({value: 0.1 * 10 ** 18, from: accounts[2]});
+    await this.crowdsale.sendTransaction({value: 1 * 10 ** 18, from: accounts[2]});
 
     advanceToBlock(this.endBlock);
 
@@ -293,17 +315,16 @@ contract('MyPizzaPieTokenPresale', function (accounts) {
     await this.crowdsale.refund({from: accounts[2]});
 
     const balanceAfter = web3.eth.getBalance(accounts[2]);
-
     assert.equal(balanceAfter > balanceBefore, true);
 
     const weiRefunded = await this.crowdsale.weiRefunded();
-    assert.equal(weiRefunded, 0.1 * 10 ** 18);
+    assert.equal(weiRefunded, 1 * 10 ** 18);
 
     //should not refund 1 more time
     try {
       await this.crowdsale.refund({from: accounts[2]});
     } catch (error) {
-      return assertJump(error);
+     return assertJump(error);
     }
     assert.fail('should have thrown before');
   });
