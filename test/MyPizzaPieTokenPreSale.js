@@ -15,7 +15,7 @@ const ethPriceProvider = web3.eth.accounts[8];
 const btcPriceProvider = web3.eth.accounts[7];
 const tokenMinimalPurchase = 25;
 const tokenPriceUsd = 10; //in cents
-const totalTokens = 50; //NOT in wei, converted by contract
+const totalTokens = 100; //NOT in wei, converted by contract
 
 function advanceToBlock(number) {
   if (web3.eth.blockNumber > number) {
@@ -59,7 +59,7 @@ contract('MyPizzaPieTokenPresale', function (accounts) {
     this.token.setTransferAgent(accounts[0], true);
 
     //transfer more than totalTokens to test hardcap reach properly
-    this.token.transfer(this.crowdsale.address, web3.toWei(5000, "ether"));
+    this.token.transfer(this.crowdsale.address, web3.toWei(totalTokens, "ether"));
   });
 
   it('should allow to halt by owner', async function () {
@@ -120,14 +120,13 @@ contract('MyPizzaPieTokenPresale', function (accounts) {
   });
 
   it('should send tokens to purchaser', async function () {
-    
     await this.crowdsale.sendTransaction({value: 1 * 10 ** 18, from: accounts[2]});
 
     const balance = await this.token.balanceOf(accounts[2]);
-    assert.equal(balance.valueOf(), 25);
+    assert.equal(balance.valueOf(), 25 * 10**18);
 
     const crowdsaleBalance = await this.token.balanceOf(this.crowdsale.address);
-    assert.equal(crowdsaleBalance.valueOf(), 4.999999999999999999998 * 10 ** 21);
+    assert.equal(crowdsaleBalance.valueOf(), 75 * 10 ** 18);
 
     const collected = await this.crowdsale.collected();
     assert.equal(collected.valueOf(), 1 * 10 ** 18);
@@ -136,7 +135,7 @@ contract('MyPizzaPieTokenPresale', function (accounts) {
     assert.equal(investorCount, 1);
 
     const tokensSold = await this.crowdsale.tokensSold();
-    assert.equal(tokensSold.valueOf(), 25);
+    assert.equal(tokensSold.valueOf(), 25 * 10 ** 18);
   });
 
   it('should not allow purchase when pre sale is halted', async function () {
@@ -175,7 +174,7 @@ contract('MyPizzaPieTokenPresale', function (accounts) {
     const amount = 2 * 10 ** 18;
     await this.crowdsale.sendTransaction({value: amount, from: accounts[2]});
     const balance = await this.token.balanceOf(accounts[2]);
-    assert.equal(balance.valueOf(), 50);
+    assert.equal(balance.valueOf(), 50 * 10**18);
   });
 
   it('should set flag when softcap is reached', async function () {
@@ -239,18 +238,19 @@ contract('MyPizzaPieTokenPresale', function (accounts) {
     await this.crowdsale.sendTransaction({value: 1 * 10 ** 18, from: accounts[1]});
     await this.crowdsale.sendTransaction({value: 1 * 10 ** 18, from: accounts[2]});
 
-    const oldBenBalanceEth = web3.eth.getBalance(beneficiary);
-    const oldBenBalancePza = await this.token.balanceOf(beneficiary).valueOf();
+    const oldBenBalanceEth = await web3.eth.getBalance(beneficiary);
+    const oldBenBalancePza = await this.token.balanceOf(beneficiary);
 
     await this.crowdsale.withdraw();
 
-    const newBenBalanceEth = web3.eth.getBalance(beneficiary);
-    const newBenBalancePza = await this.token.balanceOf(beneficiary).valueOf();
-    const preSaleContractBalancePza = await this.token.balanceOf(this.crowdsale.address).valueOf();
-    const preSaleContractBalanceEth = web3.eth.getBalance(this.crowdsale.address);
+    const newBenBalanceEth = await web3.eth.getBalance(beneficiary);
+    const newBenBalancePza = await this.token.balanceOf(beneficiary);
 
-    assert.equal(newBenBalanceEth > oldBenBalanceEth, true);
-    assert.equal(newBenBalancePza > oldBenBalancePza, true);
+    const preSaleContractBalancePza = await this.token.balanceOf(this.crowdsale.address);
+    const preSaleContractBalanceEth = await web3.eth.getBalance(this.crowdsale.address);
+
+    assert.equal(newBenBalanceEth.gt(oldBenBalanceEth), true);
+    assert.equal(newBenBalancePza.gt(oldBenBalancePza), true);
     assert.equal(preSaleContractBalancePza, 0);
     assert.equal(preSaleContractBalanceEth, 0);
   });

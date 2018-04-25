@@ -26,7 +26,7 @@ contract MyPizzaPieTokenPreSale is Haltable, PriceReceiver {
 
   uint public tokenMinimalPurchase;
   uint public tokenPriceUsd;
-  uint public totalTokens;
+  uint public totalTokens;//in wei
 
   uint public collected = 0;
   uint public tokensSold = 0;
@@ -91,7 +91,7 @@ contract MyPizzaPieTokenPreSale is Haltable, PriceReceiver {
     tokenPriceUsd = _tokenPriceUsd;
 
     tokenMinimalPurchase = _tokenMinimalPurchase;
-    totalTokens = _totalTokens;
+    totalTokens = _totalTokens.mul(1 ether);
 
     hardCap = _hardCapUSD.mul(1 ether).div(ethUsdRate);
     softCap = _softCapUSD.mul(1 ether).div(ethUsdRate);
@@ -105,7 +105,6 @@ contract MyPizzaPieTokenPreSale is Haltable, PriceReceiver {
   }
 
   function() payable minInvestment {
-    Amount(msg.value);
     doPurchase(msg.sender);
   }
 
@@ -171,9 +170,9 @@ contract MyPizzaPieTokenPreSale is Haltable, PriceReceiver {
 
     collected = collected.add(msg.value);
 
-    token.transfer(msg.sender, tokens);
+    token.transfer(msg.sender, tokens.mul(1 ether));
 
-    tokensSold = tokensSold.add(tokens);
+    tokensSold = tokensSold.add(tokens.mul(1 ether));
     deposited[msg.sender] = deposited[msg.sender].add(msg.value);
     
     NewContribution(_owner, tokens, msg.value);
