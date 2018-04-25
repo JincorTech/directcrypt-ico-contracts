@@ -12,6 +12,9 @@ contract MyPizzaPieTokenPreSale is Haltable, PriceReceiver {
   using SafeMath for uint;
 
   string public constant name = "MyPizzaPie Token PreSale";
+  uint public VOLUME_50 = 5 ether;
+  uint public VOLUME_40 = 1 ether;
+  uint public VOLUME_30 = 0.5 ether;
 
   MyPizzaPieToken public token;
   InvestorWhiteList public investorWhiteList;
@@ -24,7 +27,6 @@ contract MyPizzaPieTokenPreSale is Haltable, PriceReceiver {
   uint public ethUsdRate;
   uint public btcUsdRate;
 
-  uint public tokenMinimalPurchase;
   uint public tokenPriceUsd;
   uint public totalTokens;//in wei
 
@@ -58,11 +60,6 @@ contract MyPizzaPieTokenPreSale is Haltable, PriceReceiver {
     _;
   }
 
-  modifier minInvestment() {
-     require(msg.value >= getOneTokenInWei() * tokenMinimalPurchase);
-    _;
-  }
-
   modifier inWhiteList() {
     require(investorWhiteList.isAllowed(msg.sender));
     _;
@@ -77,7 +74,6 @@ contract MyPizzaPieTokenPreSale is Haltable, PriceReceiver {
     address _investorWhiteList,
 
     uint _totalTokens,
-    uint _tokenMinimalPurchase,
     uint _tokenPriceUsd,
 
     uint _baseEthUsdPrice,
@@ -90,7 +86,6 @@ contract MyPizzaPieTokenPreSale is Haltable, PriceReceiver {
     btcUsdRate = _baseBtcUsdPrice;
     tokenPriceUsd = _tokenPriceUsd;
 
-    tokenMinimalPurchase = _tokenMinimalPurchase;
     totalTokens = _totalTokens.mul(1 ether);
 
     hardCap = _hardCapETH.mul(1 ether);
@@ -104,7 +99,7 @@ contract MyPizzaPieTokenPreSale is Haltable, PriceReceiver {
     endBlock = _endBlock;
   }
 
-  function() payable minInvestment inWhiteList {
+  function() payable inWhiteList {
     doPurchase(msg.sender);
   }
 
@@ -165,6 +160,11 @@ contract MyPizzaPieTokenPreSale is Haltable, PriceReceiver {
     }
 
     uint tokens = msg.value.div(getOneTokenInWei());
+    uint bonus = calculateBonus(msg.value);
+    
+    if (bonus > 0) {
+      tokens = tokens + tokens.mul(bonus).div(100);
+    }
 
     if (token.balanceOf(msg.sender) == 0) investorCount++;
 
@@ -180,5 +180,17 @@ contract MyPizzaPieTokenPreSale is Haltable, PriceReceiver {
 
   function getOneTokenInWei() private returns (uint) {
     return tokenPriceUsd.mul(1 ether).div(ethUsdRate);
+  }
+
+  function calculateBonus(uint value) private returns (uint bonus) {
+    if (value >= VOLUME_50) {
+      return 50;
+    } else if (value >= VOLUME_40) {
+      return 40;
+    } else if (value >= VOLUME_30) {
+      return 30;
+    }
+
+    return 0;
   }
 }

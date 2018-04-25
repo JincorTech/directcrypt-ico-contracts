@@ -6,16 +6,15 @@ const assertJump = function(error) {
   assert.isAbove(error.message.search('VM Exception while processing transaction: revert'), -1, 'Invalid opcode error must be returned');
 };
 
-const hardCap = 2.8; //in ETH
-const softCap = 2; //in ETH
+const hardCap = 100; //in ETH
+const softCap = 30; //in ETH
 const beneficiary = web3.eth.accounts[0];
-const baseEthUsdPrice = 250; //in cents
-const baseBtcUsdPrice = 2500;
+const baseEthUsdPrice = 50000; //in cents
+const baseBtcUsdPrice = 100000; //in cents
 const ethPriceProvider = web3.eth.accounts[8];
 const btcPriceProvider = web3.eth.accounts[7];
-const tokenMinimalPurchase = 25;
-const tokenPriceUsd = 10; //in cents
-const totalTokens = 100; //NOT in wei, converted by contract
+const tokenPriceUsd = 100; //in cents
+const totalTokens = 30000; //NOT in wei, converted by contract
 
 function advanceToBlock(number) {
   if (web3.eth.blockNumber > number) {
@@ -44,7 +43,6 @@ contract('MyPizzaPieTokenPresale', function (accounts) {
       this.whiteList.address,
 
       totalTokens,
-      tokenMinimalPurchase,
       tokenPriceUsd,
 
       baseEthUsdPrice,
@@ -125,10 +123,10 @@ contract('MyPizzaPieTokenPresale', function (accounts) {
     await this.crowdsale.sendTransaction({value: 1 * 10 ** 18, from: accounts[2]});
 
     const balance = await this.token.balanceOf(accounts[2]);
-    assert.equal(balance.valueOf(), 25 * 10**18);
+    assert.equal(balance.valueOf(), 700 * 10**18);
 
     const crowdsaleBalance = await this.token.balanceOf(this.crowdsale.address);
-    assert.equal(crowdsaleBalance.valueOf(), 75 * 10 ** 18);
+    assert.equal(crowdsaleBalance.valueOf(), (totalTokens - 700) * 10 ** 18);
 
     const collected = await this.crowdsale.collected();
     assert.equal(collected.valueOf(), 1 * 10 ** 18);
@@ -137,7 +135,87 @@ contract('MyPizzaPieTokenPresale', function (accounts) {
     assert.equal(investorCount, 1);
 
     const tokensSold = await this.crowdsale.tokensSold();
-    assert.equal(tokensSold.valueOf(), 25 * 10 ** 18);
+    assert.equal(tokensSold.valueOf(), 700 * 10 ** 18);
+  });
+
+  it('should send tokens to purchaser without bonus', async function () {
+    await this.whiteList.addInvestorToWhiteList(accounts[2]);
+
+    await this.crowdsale.sendTransaction({value: 0.1 * 10 ** 18, from: accounts[2]});
+    const balance = await this.token.balanceOf(accounts[2]);
+    assert.equal(balance.valueOf(), 50 * 10**18);
+
+    const crowdsaleBalance = await this.token.balanceOf(this.crowdsale.address);
+    assert.equal(crowdsaleBalance.valueOf(), (totalTokens - 50) * 10 ** 18);
+
+    const collected = await this.crowdsale.collected();
+    assert.equal(collected.valueOf(), 0.1 * 10 ** 18);
+
+    const investorCount = await this.crowdsale.investorCount();
+    assert.equal(investorCount, 1);
+    
+    const tokensSold = await this.crowdsale.tokensSold();
+    assert.equal(tokensSold.valueOf(), 50 * 10 ** 18);
+  });
+
+  it('should send tokens to purchaser with 30% bonus', async function () {
+    await this.whiteList.addInvestorToWhiteList(accounts[2]);
+
+    await this.crowdsale.sendTransaction({value: 0.5 * 10 ** 18, from: accounts[2]});
+    const balance = await this.token.balanceOf(accounts[2]);
+    assert.equal(balance.valueOf(), (250 + 250 * 0.3) * 10**18);
+
+    const crowdsaleBalance = await this.token.balanceOf(this.crowdsale.address);
+    assert.equal(crowdsaleBalance.valueOf(), (totalTokens - (250 + 250 * 0.3)) * 10 ** 18);
+
+    const collected = await this.crowdsale.collected();
+    assert.equal(collected.valueOf(), 0.5 * 10 ** 18);
+
+    const investorCount = await this.crowdsale.investorCount();
+    assert.equal(investorCount, 1);
+    
+    const tokensSold = await this.crowdsale.tokensSold();
+    assert.equal(tokensSold.valueOf(), (250 + 250 * 0.3) * 10 ** 18);
+  });
+
+  it('should send tokens to purchaser with 40% bonus', async function () {
+    await this.whiteList.addInvestorToWhiteList(accounts[2]);
+
+    await this.crowdsale.sendTransaction({value: 1 * 10 ** 18, from: accounts[2]});
+    const balance = await this.token.balanceOf(accounts[2]);
+    assert.equal(balance.valueOf(), (500 + 500 * 0.4) * 10**18);
+
+    const crowdsaleBalance = await this.token.balanceOf(this.crowdsale.address);
+    assert.equal(crowdsaleBalance.valueOf(), (totalTokens - (500 + 500 * 0.4)) * 10 ** 18);
+
+    const collected = await this.crowdsale.collected();
+    assert.equal(collected.valueOf(), 1 * 10 ** 18);
+
+    const investorCount = await this.crowdsale.investorCount();
+    assert.equal(investorCount, 1);
+
+    const tokensSold = await this.crowdsale.tokensSold();
+    assert.equal(tokensSold.valueOf(), (500 + 500 * 0.4) * 10 ** 18);
+  });
+
+  it('should send tokens to purchaser with 50% bonus', async function () {
+    await this.whiteList.addInvestorToWhiteList(accounts[2]);
+
+    await this.crowdsale.sendTransaction({value: 5 * 10 ** 18, from: accounts[2]});
+    const balance = await this.token.balanceOf(accounts[2]);
+    assert.equal(balance.valueOf(), (2500 + 2500 * 0.5) * 10**18);
+
+    const crowdsaleBalance = await this.token.balanceOf(this.crowdsale.address);
+    assert.equal(crowdsaleBalance.valueOf(), (totalTokens - (2500 + 2500 * 0.5)) * 10 ** 18);
+
+    const collected = await this.crowdsale.collected();
+    assert.equal(collected.valueOf(), 5 * 10 ** 18);
+
+    const investorCount = await this.crowdsale.investorCount();
+    assert.equal(investorCount, 1);
+
+    const tokensSold = await this.crowdsale.tokensSold();
+    assert.equal(tokensSold.valueOf(), (2500 + 2500 * 0.5) * 10 ** 18);
   });
 
   it('should not allow purchase when pre sale is halted', async function () {
@@ -147,17 +225,6 @@ contract('MyPizzaPieTokenPresale', function (accounts) {
 
     try {
       await this.crowdsale.sendTransaction({value: 0.11 * 10 ** 18, from: accounts[2]});
-    } catch (error) {
-      return assertJump(error);
-    }
-    assert.fail('should have thrown before');
-  });
-
-  it('should not allow to send less than 0.1 ETH', async function () {
-    await this.whiteList.addInvestorToWhiteList(accounts[2]);
-
-    try {
-      await this.crowdsale.sendTransaction({value: 0.0999 * 10 ** 18, from: accounts[2]});
     } catch (error) {
       return assertJump(error);
     }
@@ -180,18 +247,19 @@ contract('MyPizzaPieTokenPresale', function (accounts) {
   it('should allow to exceed purchase limit token', async function () {
     await this.whiteList.addInvestorToWhiteList(accounts[2]);
 
-    const amount = 2 * 10 ** 18;
+    const amount = ((tokenPriceUsd * 10 ** 18)/baseEthUsdPrice) * (totalTokens - 10000);
     await this.crowdsale.sendTransaction({value: amount, from: accounts[2]});
     const balance = await this.token.balanceOf(accounts[2]);
-    assert.equal(balance.valueOf(), 50 * 10**18);
+    assert.equal(balance.valueOf(), totalTokens * 10**18);
   });
 
   it('should set flag when softcap is reached', async function () {
+    
     await this.whiteList.addInvestorToWhiteList(accounts[1]);
     await this.whiteList.addInvestorToWhiteList(accounts[2]);
 
-    await this.crowdsale.sendTransaction({value: 1 * 10 ** 18, from: accounts[1]});
-    await this.crowdsale.sendTransaction({value: 1 * 10 ** 18, from: accounts[2]});
+    await this.crowdsale.sendTransaction({value: 20 * 10 ** 18, from: accounts[1]});
+    await this.crowdsale.sendTransaction({value: 20 * 10 ** 18, from: accounts[2]});
 
     const softCapReached = await this.crowdsale.softCapReached();
     assert.equal(softCapReached, true);
@@ -201,8 +269,8 @@ contract('MyPizzaPieTokenPresale', function (accounts) {
     await this.whiteList.addInvestorToWhiteList(accounts[1]);
     await this.whiteList.addInvestorToWhiteList(accounts[2]);
 
-    await this.crowdsale.sendTransaction({value: 1 * 10 ** 18, from: accounts[1]});
-    await this.crowdsale.sendTransaction({value: 1 * 10 ** 18, from: accounts[2]});
+    await this.crowdsale.sendTransaction({value: 20 * 10 ** 18, from: accounts[1]});
+    await this.crowdsale.sendTransaction({value: 20 * 10 ** 18, from: accounts[2]});
 
     await this.crowdsale.withdraw();
 
@@ -261,8 +329,8 @@ contract('MyPizzaPieTokenPresale', function (accounts) {
     await this.whiteList.addInvestorToWhiteList(accounts[1]);
     await this.whiteList.addInvestorToWhiteList(accounts[2]);
 
-    await this.crowdsale.sendTransaction({value: 1 * 10 ** 18, from: accounts[1]});
-    await this.crowdsale.sendTransaction({value: 1 * 10 ** 18, from: accounts[2]});
+    await this.crowdsale.sendTransaction({value: 19 * 10 ** 18, from: accounts[1]});
+    await this.crowdsale.sendTransaction({value: 19 * 10 ** 18, from: accounts[2]});
 
     const oldBenBalanceEth = await web3.eth.getBalance(beneficiary);
     const oldBenBalancePza = await this.token.balanceOf(beneficiary);
@@ -311,8 +379,8 @@ contract('MyPizzaPieTokenPresale', function (accounts) {
     await this.whiteList.addInvestorToWhiteList(accounts[1]);
     await this.whiteList.addInvestorToWhiteList(accounts[3]);
 
-    await this.crowdsale.sendTransaction({value: 1 * 10 ** 18, from: accounts[1]});
-    await this.crowdsale.sendTransaction({value: 1 * 10 ** 18, from: accounts[3]});
+    await this.crowdsale.sendTransaction({value: 20 * 10 ** 18, from: accounts[1]});
+    await this.crowdsale.sendTransaction({value: 20 * 10 ** 18, from: accounts[3]});
 
     advanceToBlock(this.endBlock);
 
@@ -327,7 +395,7 @@ contract('MyPizzaPieTokenPresale', function (accounts) {
   it('should not allow refund if pre sale is halted', async function () {
     await this.whiteList.addInvestorToWhiteList(accounts[1]);
 
-    await this.crowdsale.sendTransaction({value: 1 * 10 ** 18, from: accounts[1]});
+    await this.crowdsale.sendTransaction({value: 25 * 10 ** 18, from: accounts[1]});
 
     advanceToBlock(this.endBlock);
 

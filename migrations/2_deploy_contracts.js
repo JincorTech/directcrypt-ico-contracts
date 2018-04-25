@@ -32,7 +32,6 @@ module.exports = async function(deployer) {
       InvestorWhiteList.address,
 
       totalTokens,
-      tokenMinimalPurchase,
       tokenPriceUsd,
 
       baseEthUsdPrice,
