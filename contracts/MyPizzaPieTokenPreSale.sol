@@ -104,7 +104,7 @@ contract MyPizzaPieTokenPreSale is Haltable, PriceReceiver {
     endBlock = _endBlock;
   }
 
-  function() payable minInvestment {
+  function() payable minInvestment inWhiteList {
     doPurchase(msg.sender);
   }
 

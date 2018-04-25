@@ -120,6 +120,8 @@ contract('MyPizzaPieTokenPresale', function (accounts) {
   });
 
   it('should send tokens to purchaser', async function () {
+    await this.whiteList.addInvestorToWhiteList(accounts[2]);
+
     await this.crowdsale.sendTransaction({value: 1 * 10 ** 18, from: accounts[2]});
 
     const balance = await this.token.balanceOf(accounts[2]);
@@ -139,6 +141,8 @@ contract('MyPizzaPieTokenPresale', function (accounts) {
   });
 
   it('should not allow purchase when pre sale is halted', async function () {
+    await this.whiteList.addInvestorToWhiteList(accounts[2]);
+
     await this.crowdsale.halt();
 
     try {
@@ -150,6 +154,8 @@ contract('MyPizzaPieTokenPresale', function (accounts) {
   });
 
   it('should not allow to send less than 0.1 ETH', async function () {
+    await this.whiteList.addInvestorToWhiteList(accounts[2]);
+
     try {
       await this.crowdsale.sendTransaction({value: 0.0999 * 10 ** 18, from: accounts[2]});
     } catch (error) {
@@ -159,7 +165,8 @@ contract('MyPizzaPieTokenPresale', function (accounts) {
   });
 
   it('should not allow to exceed purchase limit token', async function () {
-    
+    await this.whiteList.addInvestorToWhiteList(accounts[2]);
+
     const amount = tokenPriceUsd/baseEthUsdPrice * (totalTokens + 1) * 10 ** 18;
 
     try {
@@ -171,6 +178,8 @@ contract('MyPizzaPieTokenPresale', function (accounts) {
   });
 
   it('should allow to exceed purchase limit token', async function () {
+    await this.whiteList.addInvestorToWhiteList(accounts[2]);
+
     const amount = 2 * 10 ** 18;
     await this.crowdsale.sendTransaction({value: amount, from: accounts[2]});
     const balance = await this.token.balanceOf(accounts[2]);
@@ -178,6 +187,9 @@ contract('MyPizzaPieTokenPresale', function (accounts) {
   });
 
   it('should set flag when softcap is reached', async function () {
+    await this.whiteList.addInvestorToWhiteList(accounts[1]);
+    await this.whiteList.addInvestorToWhiteList(accounts[2]);
+
     await this.crowdsale.sendTransaction({value: 1 * 10 ** 18, from: accounts[1]});
     await this.crowdsale.sendTransaction({value: 1 * 10 ** 18, from: accounts[2]});
 
@@ -186,6 +198,9 @@ contract('MyPizzaPieTokenPresale', function (accounts) {
   });
 
   it('should not allow purchase after withdraw', async function () {
+    await this.whiteList.addInvestorToWhiteList(accounts[1]);
+    await this.whiteList.addInvestorToWhiteList(accounts[2]);
+
     await this.crowdsale.sendTransaction({value: 1 * 10 ** 18, from: accounts[1]});
     await this.crowdsale.sendTransaction({value: 1 * 10 ** 18, from: accounts[2]});
 
@@ -200,6 +215,9 @@ contract('MyPizzaPieTokenPresale', function (accounts) {
   });
 
   it('should not allow to exceed hard cap', async function () {
+    await this.whiteList.addInvestorToWhiteList(accounts[1]);
+    await this.whiteList.addInvestorToWhiteList(accounts[2]);
+
     await this.crowdsale.sendTransaction({value: 1 * 10 ** 18, from: accounts[1]});
     await this.crowdsale.sendTransaction({value: 1 * 10 ** 18, from: accounts[2]});
 
@@ -212,6 +230,9 @@ contract('MyPizzaPieTokenPresale', function (accounts) {
   });
 
   it('should allow withdraw only for owner', async function () {
+    await this.whiteList.addInvestorToWhiteList(accounts[1]);
+    await this.whiteList.addInvestorToWhiteList(accounts[2]);
+
     await this.crowdsale.sendTransaction({value: 1 * 10 ** 18, from: accounts[1]});
     await this.crowdsale.sendTransaction({value: 1 * 10 ** 18, from: accounts[2]});
 
@@ -224,6 +245,8 @@ contract('MyPizzaPieTokenPresale', function (accounts) {
   });
 
   it('should not allow withdraw when softcap is not reached', async function () {
+    await this.whiteList.addInvestorToWhiteList(accounts[1]);
+
     await this.crowdsale.sendTransaction({value: 1 * 10 ** 18, from: accounts[1]});
 
     try {
@@ -235,6 +258,9 @@ contract('MyPizzaPieTokenPresale', function (accounts) {
   });
 
   it('should withdraw - send all not distributed tokens and collected ETH to beneficiary', async function () {
+    await this.whiteList.addInvestorToWhiteList(accounts[1]);
+    await this.whiteList.addInvestorToWhiteList(accounts[2]);
+
     await this.crowdsale.sendTransaction({value: 1 * 10 ** 18, from: accounts[1]});
     await this.crowdsale.sendTransaction({value: 1 * 10 ** 18, from: accounts[2]});
 
@@ -256,6 +282,8 @@ contract('MyPizzaPieTokenPresale', function (accounts) {
   });
 
   it('should not allow purchase if pre sale is ended', async function () {
+    await this.whiteList.addInvestorToWhiteList(accounts[2]);
+
     advanceToBlock(this.endBlock);
 
     try {
@@ -267,6 +295,8 @@ contract('MyPizzaPieTokenPresale', function (accounts) {
   });
 
   it('should not allow refund if pre sale is not ended', async function () {
+    await this.whiteList.addInvestorToWhiteList(accounts[2]);
+
     await this.crowdsale.sendTransaction({value: 1 * 10 ** 18, from: accounts[2]});
 
     try {
@@ -278,6 +308,9 @@ contract('MyPizzaPieTokenPresale', function (accounts) {
   });
 
   it('should not allow refund if cap is reached', async function () {
+    await this.whiteList.addInvestorToWhiteList(accounts[1]);
+    await this.whiteList.addInvestorToWhiteList(accounts[3]);
+
     await this.crowdsale.sendTransaction({value: 1 * 10 ** 18, from: accounts[1]});
     await this.crowdsale.sendTransaction({value: 1 * 10 ** 18, from: accounts[3]});
 
@@ -292,6 +325,8 @@ contract('MyPizzaPieTokenPresale', function (accounts) {
   });
 
   it('should not allow refund if pre sale is halted', async function () {
+    await this.whiteList.addInvestorToWhiteList(accounts[1]);
+
     await this.crowdsale.sendTransaction({value: 1 * 10 ** 18, from: accounts[1]});
 
     advanceToBlock(this.endBlock);
@@ -307,6 +342,8 @@ contract('MyPizzaPieTokenPresale', function (accounts) {
   });
 
   it('should refund if cap is not reached and pre sale is ended', async function () {
+    await this.whiteList.addInvestorToWhiteList(accounts[2]);
+    
     await this.crowdsale.sendTransaction({value: 1 * 10 ** 18, from: accounts[2]});
 
     advanceToBlock(this.endBlock);
