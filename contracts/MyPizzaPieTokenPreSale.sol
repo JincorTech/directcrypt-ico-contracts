@@ -69,8 +69,8 @@ contract MyPizzaPieTokenPreSale is Haltable, PriceReceiver {
   }
 
   function MyPizzaPieTokenPreSale(
-    uint _hardCapUSD,
-    uint _softCapUSD,
+    uint _hardCapETH,
+    uint _softCapETH,
 
     address _token,
     address _beneficiary,
@@ -93,8 +93,8 @@ contract MyPizzaPieTokenPreSale is Haltable, PriceReceiver {
     tokenMinimalPurchase = _tokenMinimalPurchase;
     totalTokens = _totalTokens.mul(1 ether);
 
-    hardCap = _hardCapUSD.mul(1 ether).div(ethUsdRate);
-    softCap = _softCapUSD.mul(1 ether).div(ethUsdRate);
+    hardCap = _hardCapETH.mul(1 ether);
+    softCap = _softCapETH.mul(1 ether);
 
     token = MyPizzaPieToken(_token);
     investorWhiteList = InvestorWhiteList(_investorWhiteList);
