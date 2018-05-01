@@ -32,8 +32,8 @@ contract MyPizzaPieTokenPreICO is Haltable, PriceReceiver {
   uint public investorCount = 0;
   uint public weiRefunded = 0;
 
-  uint public startBlock;
-  uint public endBlock;
+  uint public startTime;
+  uint public endTime;
 
   bool public softCapReached = false;
   bool public crowdsaleFinished = false;
@@ -49,12 +49,12 @@ contract MyPizzaPieTokenPreICO is Haltable, PriceReceiver {
   event Amount(uint amount);
 
   modifier preSaleActive() {
-    require(block.number >= startBlock && block.number < endBlock);
+    require(block.timestamp >= startTime && block.timestamp < endTime);
     _;
   }
 
   modifier preSaleEnded() {
-    require(block.number >= endBlock);
+    require(block.timestamp >= endTime);
     _;
   }
 
@@ -77,8 +77,8 @@ contract MyPizzaPieTokenPreICO is Haltable, PriceReceiver {
     uint _baseEthUsdPrice,
     uint _baseBtcUsdPrice,
 
-    uint _startBlock,
-    uint _endBlock
+    uint _startTime,
+    uint _endTime
   ) {
     ethUsdRate = _baseEthUsdPrice;
     btcUsdRate = _baseBtcUsdPrice;
@@ -93,8 +93,8 @@ contract MyPizzaPieTokenPreICO is Haltable, PriceReceiver {
     investorWhiteList = InvestorWhiteList(_investorWhiteList);
     beneficiary = _beneficiary;
 
-    startBlock = _startBlock;
-    endBlock = _endBlock;
+    startTime = _startTime;
+    endTime = _endTime;
   }
 
   function() payable inWhiteList {

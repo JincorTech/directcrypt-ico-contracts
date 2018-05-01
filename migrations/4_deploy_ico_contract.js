@@ -10,15 +10,15 @@ module.exports = function(deployer) {
   deployer.link(SafeMath, MyPizzaPieToken);
   deployer.link(SafeMath, MyPizzaPieTokenICO);
   deployer.deploy(MyPizzaPieToken).then(async function() {
-    const hardCap = 26600000; //in PZA
-    const softCap = 2500000; //in PZA
+    const hardCap = 133000; //in ETH
+    const softCap = 12500; //in ETH
     const token = MyPizzaPieToken.address;
     const beneficiary = web3.eth.accounts[0];
-    const startBlock = web3.eth.blockNumber;
-    const endOfFirstDecade = startBlock + 500;
-    const endOfSecondDecade = startBlock + 1000;
-    const endOfThirdDecade = startBlock + 1500;
-    const endBlock = web3.eth.blockNumber + 2000;
+    const startTime = (await web3.eth.getBlock(await web3.eth.blockNumber)).timestamp;
+    const endOfFirstDecade = startTime + 3600 * 24 * 10;
+    const endOfSecondDecade = startTime + 3600 * 24 * 20;
+    const endOfThirdDecade = startTime + 3600 * 24 * 30;
+    const endTime = web3.eth.blockNumber + 3600 * 24 * 40;
     await deployer.deploy(InvestorWhiteList);
     await deployer.deploy(
       MyPizzaPieTokenICO,
@@ -29,11 +29,11 @@ module.exports = function(deployer) {
       InvestorWhiteList.address,
       25500,
       420000,
-      startBlock,
+      startTime,
       endOfFirstDecade,
       endOfSecondDecade,
       endOfThirdDecade,
-      endBlock
+      endTime
     );
     await deployer.deploy(EthPriceProvider);
     await deployer.deploy(BtcPriceProvider);

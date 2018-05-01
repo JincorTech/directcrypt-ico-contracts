@@ -21,10 +21,10 @@ module.exports = async function(deployer) {
     const btcPriceProvider = web3.eth.accounts[7];
     const tokenMinimalPurchase = 10000;
     const tokenPriceUsd = 100; //in cents
-    const startBlock = web3.eth.blockNumber;
-    const endBlock = web3.eth.blockNumber + 1000;
+    const startTime = Date.now() / 1000;
+    const endTime = startTime + 3600 * 24 * 5;
     await deployer.deploy(InvestorWhiteList);
-    await deployer.deploy(MyPizzaPieTokenPreSale, 
+    await deployer.deploy(MyPizzaPieTokenPreSale,
       hardCap,
       softCap,
       token,
@@ -37,8 +37,8 @@ module.exports = async function(deployer) {
       baseEthUsdPrice,
       baseBtcUsdPrice,
 
-      startBlock,
-      endBlock
+      startTime,
+      endTime
     );
     await deployer.deploy(EthPriceProvider);
     await deployer.deploy(BtcPriceProvider);

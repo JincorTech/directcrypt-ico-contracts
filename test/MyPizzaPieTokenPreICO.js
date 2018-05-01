@@ -16,20 +16,19 @@ const btcPriceProvider = web3.eth.accounts[7];
 const tokenPriceUsd = 100; //in cents
 const totalTokens = 30000; //NOT in wei, converted by contract
 
-function advanceToBlock(number) {
-  if (web3.eth.blockNumber > number) {
-    throw Error(`block number ${number} is in the past (current is ${web3.eth.blockNumber})`)
-  }
-
-  while (web3.eth.blockNumber < number) {
-    web3.eth.sendTransaction({value: 1, from: web3.eth.accounts[8], to: web3.eth.accounts[7]});
-  }
+async function increaseTimestampBy(seconds) {
+  const jsonrpc = '2.0';
+  const id = 0;
+  const send = (method, params = []) => web3.currentProvider.send({id, jsonrpc, method, params});
+  await send('evm_increaseTime', [seconds]);
+  await send('evm_mine');
 }
 
 contract('MyPizzaPieTokenPreICO', function (accounts) {
   beforeEach(async function () {
-    this.startBlock = web3.eth.blockNumber;
-    this.endBlock = web3.eth.blockNumber + 15;
+    this.block = await web3.eth.getBlock(await web3.eth.blockNumber);
+    this.startTime = this.block.timestamp;
+    this.endTime = this.startTime + 3600*24;
 
     this.whiteList = await InvestorWhiteList.new();
 
@@ -48,8 +47,8 @@ contract('MyPizzaPieTokenPreICO', function (accounts) {
       baseEthUsdPrice,
       baseBtcUsdPrice,
 
-      this.startBlock,
-      this.endBlock
+      this.startTime,
+      this.endTime
     );
 
     this.token.setTransferAgent(this.token.address, true);
@@ -387,7 +386,7 @@ contract('MyPizzaPieTokenPreICO', function (accounts) {
   it('should not allow purchase if pre sale is ended', async function () {
     await this.whiteList.addInvestorToWhiteList(accounts[2]);
 
-    advanceToBlock(this.endBlock);
+    increaseTimestampBy(3600*24);
 
     try {
       await this.crowdsale.sendTransaction({value: 0.1 * 10 ** 18, from: accounts[2]});
@@ -417,7 +416,7 @@ contract('MyPizzaPieTokenPreICO', function (accounts) {
     await this.crowdsale.sendTransaction({value: 25 * 10 ** 18, from: accounts[1]});
     await this.crowdsale.sendTransaction({value: 25 * 10 ** 18, from: accounts[3]});
 
-    advanceToBlock(this.endBlock);
+    increaseTimestampBy(3600*24);
 
     try {
       await this.crowdsale.refund({from: accounts[3]});
@@ -432,7 +431,7 @@ contract('MyPizzaPieTokenPreICO', function (accounts) {
 
     await this.crowdsale.sendTransaction({value: 25 * 10 ** 18, from: accounts[1]});
 
-    advanceToBlock(this.endBlock);
+    increaseTimestampBy(3600*24);
 
     await this.crowdsale.halt();
 
@@ -449,7 +448,7 @@ contract('MyPizzaPieTokenPreICO', function (accounts) {
     
     await this.crowdsale.sendTransaction({value: 1 * 10 ** 18, from: accounts[2]});
 
-    advanceToBlock(this.endBlock);
+    increaseTimestampBy(3600*24);
 
     const balanceBefore = web3.eth.getBalance(accounts[2]);
     await this.crowdsale.refund({from: accounts[2]});

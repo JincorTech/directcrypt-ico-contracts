@@ -6,32 +6,31 @@ const assertJump = function(error) {
   assert.isAbove(error.message.search('VM Exception while processing transaction: revert'), -1, 'Invalid opcode error must be returned');
 };
 
-const hardCap = 26600000; //in PZA
-const softCap = 2500000; //in PZA
+const hardCap = 133000; //in ETH
+const softCap = 12500; //in ETH
 const beneficiary = web3.eth.accounts[9];
 const ethUsdPrice = 20000; //in cents
 const btcUsdPrice = 400000; //in cents
 const ethPriceProvider = web3.eth.accounts[8];
 const btcPriceProvider = web3.eth.accounts[7];
 
-function advanceToBlock(number) {
-  if (web3.eth.blockNumber > number) {
-    throw Error(`block number ${number} is in thfe past (current is ${web3.eth.blockNumber})`)
-  }
-
-  while (web3.eth.blockNumber < number) {
-    web3.eth.sendTransaction({value: 1, from: web3.eth.accounts[8], to: web3.eth.accounts[7]});
-  }
+async function increaseTimestampBy(seconds) {
+  const jsonrpc = '2.0';
+  const id = 0;
+  const send = (method, params = []) => web3.currentProvider.send({id, jsonrpc, method, params});
+  await send('evm_increaseTime', [seconds]);
+  await send('evm_mine');
 }
 
 contract('MyPizzaPieTokenICO', function (accounts) {
   beforeEach(async function () {
-    this.startBlock = web3.eth.blockNumber;
-    this.endOfFirstDecade = this.startBlock + 20;
-    this.endOfSecondDecade = this.startBlock + 40;
-    this.endOfThirdDecade = this.startBlock + 60;
-    this.endBlock = this.startBlock + 80;
-    this.endOfFourthDecade = this.endBlock;
+    this.block = await web3.eth.getBlock(await web3.eth.blockNumber);
+    this.startTime = this.block.timestamp;
+    this.endOfFirstDecade = this.startTime + 3600*24*1;
+    this.endOfSecondDecade = this.startTime + 3600*24*2;
+    this.endOfThirdDecade = this.startTime + 3600*24*3;
+    this.endOfFourthDecade = this.startTime + 3600*24*4;
+    this.endTime = this.endOfFourthDecade;
 
     this.token = await MyPizzaPieToken.new();
     this.whiteList = await InvestorWhiteList.new();
@@ -47,11 +46,11 @@ contract('MyPizzaPieTokenICO', function (accounts) {
       ethUsdPrice,
       btcUsdPrice,
 
-      this.startBlock,
+      this.startTime,
       this.endOfFirstDecade,
       this.endOfSecondDecade,
       this.endOfThirdDecade,
-      this.endBlock
+      this.endTime
     );
     this.token.setTransferAgent(this.token.address, true);
     this.token.setTransferAgent(this.crowdsale.address, true);
@@ -243,7 +242,7 @@ contract('MyPizzaPieTokenICO', function (accounts) {
   });
 
   it('should allow to transfer ownership when ICO is ended', async function () {
-    advanceToBlock(this.endBlock);
+    await increaseTimestampBy(3600 * 24 * 4);
 
     await this.crowdsale.transferOwnership(accounts[1]);
     const actual = await this.crowdsale.owner();
@@ -326,7 +325,7 @@ contract('MyPizzaPieTokenICO', function (accounts) {
   });
 
   it('should add 15% bonus and send 5% referral bonus (second decade)', async function () {
-    advanceToBlock(this.endOfFirstDecade);
+    await increaseTimestampBy(3600 * 24 * 1);
     await this.whiteList.addInvestorToWhiteList(accounts[2]);
     await this.whiteList.addReferralOf(accounts[2], accounts[3]);
 
@@ -356,7 +355,7 @@ contract('MyPizzaPieTokenICO', function (accounts) {
   });
 
   it('should add 10% bonus and send 5% referral bonus (third decade)', async function () {
-    advanceToBlock(this.endOfSecondDecade);
+    await increaseTimestampBy(3600 * 24 * 2);
     await this.whiteList.addInvestorToWhiteList(accounts[2]);
     await this.whiteList.addReferralOf(accounts[2], accounts[3]);
 
@@ -386,7 +385,7 @@ contract('MyPizzaPieTokenICO', function (accounts) {
   });
 
   it('should add 5% bonus and send 5% referral bonus (fourth decade)', async function () {
-    advanceToBlock(this.endOfThirdDecade);
+    await increaseTimestampBy(3600 * 24 * 3);
     await this.whiteList.addInvestorToWhiteList(accounts[2]);
     await this.whiteList.addReferralOf(accounts[2], accounts[3]);
 
@@ -504,7 +503,7 @@ contract('MyPizzaPieTokenICO', function (accounts) {
 
   it('should not allow purchase if ICO is ended', async function () {
     await this.whiteList.addInvestorToWhiteList(accounts[2]);
-    advanceToBlock(this.endBlock);
+    await increaseTimestampBy(3600 * 24 * 4);
 
     try {
       await this.crowdsale.sendTransaction({value: 1 * 10 ** 18, from: accounts[2]});
@@ -548,7 +547,7 @@ contract('MyPizzaPieTokenICO', function (accounts) {
     await this.crowdsale.sendTransaction({value: 12000 * 10 ** 18, from: accounts[1]});
     await this.crowdsale.sendTransaction({value: 500 * 10 ** 18, from: accounts[3]});
 
-    advanceToBlock(this.endBlock);
+    await increaseTimestampBy(3600 * 24 * 4);
 
     try {
       await this.crowdsale.refund({from: accounts[3]});
@@ -563,7 +562,7 @@ contract('MyPizzaPieTokenICO', function (accounts) {
 
     await this.crowdsale.sendTransaction({value: 1 * 10 ** 18, from: accounts[1]});
 
-    advanceToBlock(this.endBlock);
+    await increaseTimestampBy(3600 * 24 * 4);
     await this.crowdsale.halt();
 
     const balanceBefore = web3.eth.getBalance(accounts[1]);
@@ -580,7 +579,7 @@ contract('MyPizzaPieTokenICO', function (accounts) {
 
     await this.crowdsale.sendTransaction({value: 1 * 10 ** 18, from: accounts[2]});
 
-    advanceToBlock(this.endBlock);
+    await increaseTimestampBy(3600 * 24 * 4);
 
     const balanceBefore = web3.eth.getBalance(accounts[2]);
     await this.crowdsale.refund({from: accounts[2]});
