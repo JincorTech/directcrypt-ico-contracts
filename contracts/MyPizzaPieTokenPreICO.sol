@@ -8,13 +8,10 @@ import "./InvestorWhiteList.sol";
 import "./abstract/PriceReceiver.sol";
 
 
-contract MyPizzaPieTokenPreSale is Haltable, PriceReceiver {
+contract MyPizzaPieTokenPreICO is Haltable, PriceReceiver {
   using SafeMath for uint;
 
-  string public constant name = "MyPizzaPie Token PreSale";
-  uint public VOLUME_50 = 5 ether;
-  uint public VOLUME_40 = 1 ether;
-  uint public VOLUME_30 = 0.5 ether;
+  string public constant name = "MyPizzaPie Token PreICO";
 
   MyPizzaPieToken public token;
   InvestorWhiteList public investorWhiteList;
@@ -41,11 +38,12 @@ contract MyPizzaPieTokenPreSale is Haltable, PriceReceiver {
   bool public softCapReached = false;
   bool public crowdsaleFinished = false;
 
-  mapping (address => bool) refunded;
+  mapping (address => bool) public refunded;
   mapping (address => uint) public deposited;
 
   event SoftCapReached(uint softCap);
   event NewContribution(address indexed holder, uint tokenAmount, uint etherAmount);
+  event NewReferralTransfer(address indexed investor, address indexed referral, uint tokenAmount);
   event Refunded(address indexed holder, uint amount);
   event Deposited(address indexed holder, uint amount);
   event Amount(uint amount);
@@ -65,7 +63,7 @@ contract MyPizzaPieTokenPreSale is Haltable, PriceReceiver {
     _;
   }
 
-  function MyPizzaPieTokenPreSale(
+  function MyPizzaPieTokenPreICO(
     uint _hardCapETH,
     uint _softCapETH,
 
@@ -110,10 +108,10 @@ contract MyPizzaPieTokenPreSale is Haltable, PriceReceiver {
     uint refund = deposited[msg.sender];
     require(refund > 0);
 
-    msg.sender.transfer(refund);
     deposited[msg.sender] = 0;
     refunded[msg.sender] = true;
     weiRefunded = weiRefunded.add(refund);
+    msg.sender.transfer(refund);
     Refunded(msg.sender, refund);
   }
 
@@ -152,41 +150,45 @@ contract MyPizzaPieTokenPreSale is Haltable, PriceReceiver {
   function doPurchase(address _owner) private preSaleActive inNormalState {
     require(!crowdsaleFinished);
     require(collected.add(msg.value) <= hardCap);
-    require(totalTokens >= tokensSold + msg.value.mul(ethUsdRate).div(tokenPriceUsd));
 
-    if (!softCapReached && collected < softCap && collected.add(msg.value) >= softCap) {
+    uint tokens = msg.value.mul(ethUsdRate).div(tokenPriceUsd);
+
+    require(totalTokens >= tokensSold + tokens);
+
+    if (!softCapReached
+      && collected < softCap
+      && collected.add(msg.value) >= softCap
+    ) {
       softCapReached = true;
       SoftCapReached(softCap);
     }
 
-    uint tokens = msg.value.mul(ethUsdRate).div(tokenPriceUsd);
-    uint bonus = calculateBonus(msg.value);
-    
-    if (bonus > 0) {
-      tokens = tokens + tokens.mul(bonus).div(100);
-    }
-
     if (token.balanceOf(msg.sender) == 0) investorCount++;
 
-    collected = collected.add(msg.value);
+    address referral = investorWhiteList.getReferralOf(msg.sender);
+    uint referralBonus = calculateReferralBonus(tokens);
 
-    token.transfer(msg.sender, tokens);
+    uint newTokensSold = tokensSold.add(tokens);
 
-    tokensSold = tokensSold.add(tokens);
-    deposited[msg.sender] = deposited[msg.sender].add(msg.value);
-    
-    NewContribution(_owner, tokens, msg.value);
-  }
-
-  function calculateBonus(uint value) private returns (uint bonus) {
-    if (value >= VOLUME_50) {
-      return 50;
-    } else if (value >= VOLUME_40) {
-      return 40;
-    } else if (value >= VOLUME_30) {
-      return 30;
+    if (referralBonus > 0 && referral != 0x0) {
+      newTokensSold = newTokensSold.add(referralBonus);
     }
 
-    return 0;
+    tokensSold = newTokensSold;
+
+    collected = collected.add(msg.value);
+    deposited[msg.sender] = deposited[msg.sender].add(msg.value);
+
+    token.transfer(msg.sender, tokens);
+    NewContribution(_owner, tokens, msg.value);
+
+    if (referralBonus > 0 && referral != 0x0) {
+      token.transfer(referral, referralBonus);
+      NewReferralTransfer(msg.sender, referral, referralBonus);
+    }
+  }
+
+  function calculateReferralBonus(uint tokens) private returns (uint) {
+    return tokens.mul(5).div(100);
   }
 }

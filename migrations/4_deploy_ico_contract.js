@@ -15,9 +15,26 @@ module.exports = function(deployer) {
     const token = MyPizzaPieToken.address;
     const beneficiary = web3.eth.accounts[0];
     const startBlock = web3.eth.blockNumber;
+    const endOfFirstDecade = startBlock + 500;
+    const endOfSecondDecade = startBlock + 1000;
+    const endOfThirdDecade = startBlock + 1500;
     const endBlock = web3.eth.blockNumber + 2000;
     await deployer.deploy(InvestorWhiteList);
-    await deployer.deploy(MyPizzaPieTokenICO, hardCap, softCap, token, beneficiary, InvestorWhiteList.address, 25500, 420000, startBlock, endBlock);
+    await deployer.deploy(
+      MyPizzaPieTokenICO,
+      hardCap,
+      softCap,
+      token,
+      beneficiary,
+      InvestorWhiteList.address,
+      25500,
+      420000,
+      startBlock,
+      endOfFirstDecade,
+      endOfSecondDecade,
+      endOfThirdDecade,
+      endBlock
+    );
     await deployer.deploy(EthPriceProvider);
     await deployer.deploy(BtcPriceProvider);
 
