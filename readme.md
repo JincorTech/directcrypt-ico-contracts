@@ -1,33 +1,54 @@
-# Jincor ICO Contracts
-![](https://travis-ci.org/JincorTech/ico.svg?branch=master)
-![](https://habrastorage.org/webt/59/d5/42/59d542206afbe280817420.png)
+# MyPizzaPie ICO Contracts
 
-Baked with <3 by [Jincor](https://ico.jincor.com)
+Baked with <3 by [secret_tech](https://secrettech.io)
 
-## JCR token functionality
-In order to further the development of the platform, reach breakeven and get to the global market as soon as possible we are going to raise extra funding by running an ICO campaign.
+## MyPizzaPie token properties (ERC20)
 
-Jincor issued 35,000,000 JCR tokens total, most of which will be put on sale. The base cost of tokens will depend on the popularity of the platform, and their holders will be able to share the success of Jincor by getting permanent progressive income.
+- Price: $1.00
+- Name: MyPizzaPie Token
+- Ticker: PZA
+- Decimals: 18
+- Automatic update of token rates every 12 hours
 
-In the future, JCR tokens will be essential for the proper platform experience. Whereas it is free for organizations to use the basic functionality of Jincor ecosystem, some features will be available for a fee, which can be paid in JCR tokens only. These premium features include:
+## Token emission
 
-1. Digital verification of companies;
-2. Setting up enterprise and individual cryptocurrency accounts;
-3. Getting access to a range of financial instruments, such as bills of credit, colls, overdrafts, factoring and etc.;
+- Total supply: 81,192,000
+- Sales pool is 28,892,000 (PreSale, Pre-ICO and ICO)
 
-Using a construction set for creating and execution of corporate smart contracts (based on labour, property, contractual and other relations);
+## Private PreSale stage
 
-Appealing to a decentralized arbitration system for litigation within the digital jurisdiction.
-To sum up, JCR tokens will serve as a local digital currency, which can be used for paying Jincor fees and mutual corporate payments, just like any other popular cryptocurrency.
+- SoftCap: 500 ETH
+- HardCap: 28,500 ETH
+- Price token: $1.00
 
-JCR token is developed on Ethereum’s blockchain and conform to the ERC20 Token Standard.
+### Bonus
 
-Important notes:
+- 50-99 ETH: +30% tokens
+- 100-499 ETH: +40% tokes
+- 500-1000 ETH: +50% tokens
 
-1. JCR tokens will be sent automatically back to the wallet from which the funds have been sent.
-2. JCR tokens transactions will be limited till ICO end to prevent trading before the ICO ends.
-3. During the pre-ICO ETH is accepted only from wallets compliant with ERC-20 token standard. (recommended to use: MyEtherWallet). Do not send ETH directly from cryptocurrency exchanges (Coinbase, Kraken, Poloniex etc.)!
-4. We'll send back all ETH in case of minimal cap is not collected.
+## PreICO stage
+
+- SoftCap: 2,500 ETH
+- HardCap: 28,500 ETH
+- Price token: $0.75 (discount 25%)
+- Period: 7 days
+
+## ICO stage
+
+- SoftCap: 2,500 ETH
+- HardCap: 28,500 ETH
+
+### Bonus
+
+- 1-9 days: +20%
+- 10-19 days: +15%
+- 20-29 days: +10%
+- 30-39 days: +5%
+
+## Referral program
+- Referral program bonus shall run in pre-ico and ico only
+- Referral program (bonus) shall be set at: 5% to referrer
 
 ## How to setup development environment and run tests?
 
