@@ -3,16 +3,16 @@ pragma solidity ^0.4.11;
 import "./Haltable.sol";
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
-import "./JincorToken.sol";
+import "./MyPizzaPieToken.sol";
 import "./InvestorWhiteList.sol";
 import "./abstract/PriceReceiver.sol";
 
-contract JincorTokenICO is Haltable, PriceReceiver {
+contract MyPizzaPieTokenICO is Haltable, PriceReceiver {
   using SafeMath for uint;
 
-  string public constant name = "Jincor Token ICO";
+  string public constant name = "MyPizzaPie Token ICO";
 
-  JincorToken public token;
+  MyPizzaPieToken public token;
 
   address public beneficiary;
 
@@ -20,59 +20,43 @@ contract JincorTokenICO is Haltable, PriceReceiver {
 
   InvestorWhiteList public investorWhiteList;
 
-  uint public constant jcrUsdRate = 100; //in cents
+  uint public constant pzaUsdRate = 100; //in cents
 
   uint public ethUsdRate;
-
   uint public btcUsdRate;
 
   uint public hardCap;
-
   uint public softCap;
 
   uint public collected = 0;
-
   uint public tokensSold = 0;
-
   uint public weiRefunded = 0;
 
-  uint public startBlock;
-
-  uint public endBlock;
+  uint public startTime;
+  uint public endTime;
 
   bool public softCapReached = false;
-
   bool public crowdsaleFinished = false;
+
+  uint public endOfFirstDecade;
+  uint public endOfSecondDecade;
+  uint public endOfThirdDecade;
+  uint public endOfFourthDecade;
 
   mapping (address => uint) public deposited;
 
-  uint constant VOLUME_20_REF_7 = 5000 ether;
-
-  uint constant VOLUME_15_REF_6 = 2000 ether;
-
-  uint constant VOLUME_12d5_REF_5d5 = 1000 ether;
-
-  uint constant VOLUME_10_REF_5 = 500 ether;
-
-  uint constant VOLUME_7_REF_4 = 250 ether;
-
-  uint constant VOLUME_5_REF_3 = 100 ether;
-
   event SoftCapReached(uint softCap);
-
   event NewContribution(address indexed holder, uint tokenAmount, uint etherAmount);
-
   event NewReferralTransfer(address indexed investor, address indexed referral, uint tokenAmount);
-
   event Refunded(address indexed holder, uint amount);
 
   modifier icoActive() {
-    require(block.number >= startBlock && block.number < endBlock);
+    require(block.timestamp >= startTime && block.timestamp < endTime);
     _;
   }
 
   modifier icoEnded() {
-    require(block.number >= endBlock);
+    require(block.timestamp >= endTime);
     _;
   }
 
@@ -86,27 +70,36 @@ contract JincorTokenICO is Haltable, PriceReceiver {
     _;
   }
 
-  function JincorTokenICO(
-    uint _hardCapJCR,
-    uint _softCapJCR,
+  function MyPizzaPieTokenICO(
+    uint _hardCapETH,
+    uint _softCapETH,
+
     address _token,
     address _beneficiary,
     address _investorWhiteList,
+
     uint _baseEthUsdPrice,
     uint _baseBtcUsdPrice,
 
-    uint _startBlock,
-    uint _endBlock
+    uint _startTime,
+    uint _endOfFirstDecade,
+    uint _endOfSecondDecade,
+    uint _endOfThirdDecade,
+    uint _endTime
   ) {
-    hardCap = _hardCapJCR.mul(1 ether);
-    softCap = _softCapJCR.mul(1 ether);
+    hardCap = _hardCapETH.mul(1 ether);
+    softCap = _softCapETH.mul(1 ether);
 
-    token = JincorToken(_token);
+    token = MyPizzaPieToken(_token);
     beneficiary = _beneficiary;
     investorWhiteList = InvestorWhiteList(_investorWhiteList);
 
-    startBlock = _startBlock;
-    endBlock = _endBlock;
+    startTime = _startTime;
+    endOfFirstDecade = _endOfFirstDecade;
+    endOfSecondDecade = _endOfSecondDecade;
+    endOfThirdDecade = _endOfThirdDecade;
+    endOfFourthDecade = _endTime;
+    endTime = _endTime;
 
     ethUsdRate = _baseEthUsdPrice;
     btcUsdRate = _baseBtcUsdPrice;
@@ -136,62 +129,6 @@ contract JincorTokenICO is Haltable, PriceReceiver {
     crowdsaleFinished = true;
   }
 
-  function calculateBonus(uint tokens) internal constant returns (uint bonus) {
-    if (msg.value >= VOLUME_20_REF_7) {
-      return tokens.mul(20).div(100);
-    }
-
-    if (msg.value >= VOLUME_15_REF_6) {
-      return tokens.mul(15).div(100);
-    }
-
-    if (msg.value >= VOLUME_12d5_REF_5d5) {
-      return tokens.mul(125).div(1000);
-    }
-
-    if (msg.value >= VOLUME_10_REF_5) {
-      return tokens.mul(10).div(100);
-    }
-
-    if (msg.value >= VOLUME_7_REF_4) {
-      return tokens.mul(7).div(100);
-    }
-
-    if (msg.value >= VOLUME_5_REF_3) {
-      return tokens.mul(5).div(100);
-    }
-
-    return 0;
-  }
-
-  function calculateReferralBonus(uint tokens) internal constant returns (uint bonus) {
-    if (msg.value >= VOLUME_20_REF_7) {
-      return tokens.mul(7).div(100);
-    }
-
-    if (msg.value >= VOLUME_15_REF_6) {
-      return tokens.mul(6).div(100);
-    }
-
-    if (msg.value >= VOLUME_12d5_REF_5d5) {
-      return tokens.mul(55).div(1000);
-    }
-
-    if (msg.value >= VOLUME_10_REF_5) {
-      return tokens.mul(5).div(100);
-    }
-
-    if (msg.value >= VOLUME_7_REF_4) {
-      return tokens.mul(4).div(100);
-    }
-
-    if (msg.value >= VOLUME_5_REF_3) {
-      return tokens.mul(3).div(100);
-    }
-
-    return 0;
-  }
-
   function receiveEthPrice(uint ethUsdPrice) external onlyEthPriceProvider {
     require(ethUsdPrice > 0);
     ethUsdRate = ethUsdPrice;
@@ -217,24 +154,31 @@ contract JincorTokenICO is Haltable, PriceReceiver {
     investorWhiteList = InvestorWhiteList(newWhiteList);
   }
 
+  function transferOwnership(address newOwner) onlyOwner icoEnded {
+    super.transferOwnership(newOwner);
+  }
+
   function doPurchase() private icoActive inNormalState {
     require(!crowdsaleFinished);
 
-    uint tokens = msg.value.mul(ethUsdRate).div(jcrUsdRate);
-    uint referralBonus = calculateReferralBonus(tokens);
-    address referral = investorWhiteList.getReferralOf(msg.sender);
-
+    uint tokens = msg.value.mul(ethUsdRate).div(pzaUsdRate);
     tokens = tokens.add(calculateBonus(tokens));
 
     uint newTokensSold = tokensSold.add(tokens);
+
+    uint referralBonus = calculateReferralBonus(tokens);
+    address referral = investorWhiteList.getReferralOf(msg.sender);
 
     if (referralBonus > 0 && referral != 0x0) {
       newTokensSold = newTokensSold.add(referralBonus);
     }
 
-    require(newTokensSold <= hardCap);
+    require(collected.add(msg.value) <= hardCap);
 
-    if (!softCapReached && newTokensSold >= softCap) {
+    if (!softCapReached
+      && collected < softCap
+      && collected.add(msg.value) >= softCap
+    ) {
       softCapReached = true;
       SoftCapReached(softCap);
     }
@@ -254,7 +198,19 @@ contract JincorTokenICO is Haltable, PriceReceiver {
     }
   }
 
-  function transferOwnership(address newOwner) onlyOwner icoEnded {
-    super.transferOwnership(newOwner);
+  function calculateReferralBonus(uint tokens) private returns(uint bonus) {
+    return tokens.mul(5).div(100);
+  }
+
+  function calculateBonus(uint tokens) internal constant returns (uint bonus) {
+    if (block.timestamp >= startTime && block.timestamp < endOfFirstDecade) {
+      return tokens.mul(20).div(100);
+    } else if (block.timestamp >= endOfFirstDecade && block.timestamp < endOfSecondDecade) {
+      return tokens.mul(15).div(100);
+    } else if (block.timestamp >= endOfSecondDecade && block.timestamp < endOfThirdDecade) {
+      return tokens.mul(10).div(100);
+    } else if (block.timestamp >= endOfThirdDecade && block.timestamp < endOfFourthDecade) {
+      return tokens.mul(5).div(100);
+    }
   }
 }
