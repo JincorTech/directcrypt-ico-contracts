@@ -64,3 +64,5 @@ message to appear. To check for it run `docker logs ico_oracle_1`.
 1. To run tests: `docker-compose exec workspace truffle test`.
 1. To merge your contracts via sol-merger run: `docker-compose exec workspace yarn merge`.
 Merged contracts will appear in `merge` directory.
+1. To compile your contracts: `docker-compose exec workspace truffle compile`.
+Compiled contracts will appear in `build` directory. In this directory, there will be files in which all necessary information will be provided (abi, bytecode, compiler and etc).
