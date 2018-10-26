@@ -2,7 +2,6 @@ var SafeMath = artifacts.require('./SafeMath.sol');
 var DirectCryptToken = artifacts.require("./DirectCryptToken.sol");
 var DirectCryptTokenICO = artifacts.require("./DirectCryptTokenICO.sol");
 var EthPriceProvider = artifacts.require("./EthPriceProvider.sol");
-var BtcPriceProvider = artifacts.require("./BtcPriceProvider.sol");
 var InvestorWhiteList = artifacts.require("./InvestorWhiteList.sol");
 
 module.exports = function(deployer) {
@@ -36,19 +35,14 @@ module.exports = function(deployer) {
       endTime
     );
     await deployer.deploy(EthPriceProvider);
-    await deployer.deploy(BtcPriceProvider);
 
     const icoInstance = web3.eth.contract(DirectCryptTokenICO.abi).at(DirectCryptTokenICO.address);
     const ethProvider = web3.eth.contract(EthPriceProvider.abi).at(EthPriceProvider.address);
-    const btcProvider = web3.eth.contract(BtcPriceProvider.abi).at(BtcPriceProvider.address);
 
     icoInstance.setEthPriceProvider(EthPriceProvider.address, { from: web3.eth.accounts[0] });
-    icoInstance.setBtcPriceProvider(BtcPriceProvider.address, { from: web3.eth.accounts[0] });
     ethProvider.setWatcher(DirectCryptTokenICO.address, { from: web3.eth.accounts[0] });
-    btcProvider.setWatcher(DirectCryptTokenICO.address, { from: web3.eth.accounts[0] });
 
     //start update and send ETH to cover Oraclize fees
     ethProvider.startUpdate(30000, { value: web3.toWei(1000), from: web3.eth.accounts[0], gas: 200000 });
-    btcProvider.startUpdate(650000, { value: web3.toWei(1000), from: web3.eth.accounts[0], gas: 200000 });
   });
 };

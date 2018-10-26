@@ -23,7 +23,6 @@ contract DirectCryptTokenICO is Haltable, PriceReceiver {
   uint public constant drctUsdRate = 100; //in cents
 
   uint public ethUsdRate;
-  uint public btcUsdRate;
 
   uint public hardCap;
   uint public softCap;
@@ -79,7 +78,6 @@ contract DirectCryptTokenICO is Haltable, PriceReceiver {
     address _investorWhiteList,
 
     uint _baseEthUsdPrice,
-    uint _baseBtcUsdPrice,
 
     uint _startTime,
     uint _endOfFirstDecade,
@@ -102,7 +100,6 @@ contract DirectCryptTokenICO is Haltable, PriceReceiver {
     endTime = _endTime;
 
     ethUsdRate = _baseEthUsdPrice;
-    btcUsdRate = _baseBtcUsdPrice;
   }
 
   function() payable minInvestment inWhiteList {
@@ -134,19 +131,9 @@ contract DirectCryptTokenICO is Haltable, PriceReceiver {
     ethUsdRate = ethUsdPrice;
   }
 
-  function receiveBtcPrice(uint btcUsdPrice) external onlyBtcPriceProvider {
-    require(btcUsdPrice > 0);
-    btcUsdRate = btcUsdPrice;
-  }
-
   function setEthPriceProvider(address provider) external onlyOwner {
     require(provider != 0x0);
     ethPriceProvider = provider;
-  }
-
-  function setBtcPriceProvider(address provider) external onlyOwner {
-    require(provider != 0x0);
-    btcPriceProvider = provider;
   }
 
   function setNewWhiteList(address newWhiteList) external onlyOwner {

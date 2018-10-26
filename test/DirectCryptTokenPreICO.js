@@ -10,9 +10,7 @@ const hardCap = 100; //in ETH
 const softCap = 30; //in ETH
 const beneficiary = web3.eth.accounts[0];
 const baseEthUsdPrice = 50000; //in cents
-const baseBtcUsdPrice = 100000; //in cents
 const ethPriceProvider = web3.eth.accounts[8];
-const btcPriceProvider = web3.eth.accounts[7];
 const tokenPriceUsd = 100; //in cents
 const totalTokens = 30000; //NOT in wei, converted by contract
 
@@ -45,7 +43,6 @@ contract('DirectCryptTokenPreICO', function (accounts) {
       tokenPriceUsd,
 
       baseEthUsdPrice,
-      baseBtcUsdPrice,
 
       this.startTime,
       this.endTime
@@ -56,7 +53,6 @@ contract('DirectCryptTokenPreICO', function (accounts) {
     this.token.setTransferAgent(accounts[0], true);
 
     await this.crowdsale.setEthPriceProvider(ethPriceProvider);
-    await this.crowdsale.setBtcPriceProvider(btcPriceProvider);
 
     //transfer more than totalTokens to test hardcap reach properly
     this.token.transfer(this.crowdsale.address, web3.toWei(totalTokens, "ether"));
@@ -127,14 +123,6 @@ contract('DirectCryptTokenPreICO', function (accounts) {
     assert.equal(ethUsdRate, 25000);
   });
 
-  it('should allow to update BTC price by BTC price provider', async function () {
-    await this.crowdsale.receiveBtcPrice(420000, {from: btcPriceProvider});
-
-    const btcUsdRate = await this.crowdsale.btcUsdRate();
-
-    assert.equal(btcUsdRate, 420000);
-  });
-
   it('should not allow to update ETH price by not ETH price provider', async function () {
     try {
       await this.crowdsale.receiveEthPrice(25000, {from: accounts[2]});
@@ -144,38 +132,12 @@ contract('DirectCryptTokenPreICO', function (accounts) {
     assert.fail('should have thrown before');
   });
 
-  it('should not allow to update BTC price by not BTC price provider', async function () {
-    try {
-      await this.crowdsale.receiveBtcPrice(420000, {from: accounts[2]});
-    } catch (error) {
-      return assertJump(error);
-    }
-    assert.fail('should have thrown before');
-  });
-
-  it('should allow to set BTC price provider by owner', async function () {
-    await this.crowdsale.setBtcPriceProvider(accounts[2], {from: accounts[0]});
-
-    const newPriceProvider = await this.crowdsale.btcPriceProvider();
-
-    assert.equal(accounts[2], newPriceProvider);
-  });
-
   it('should allow to set ETH price provider by owner', async function () {
     await this.crowdsale.setEthPriceProvider(accounts[2], {from: accounts[0]});
 
     const newPriceProvider = await this.crowdsale.ethPriceProvider();
 
     assert.equal(accounts[2], newPriceProvider);
-  });
-
-  it('should not allow to set BTC price provider by not owner', async function () {
-    try {
-      await this.crowdsale.setBtcPriceProvider(accounts[2], {from: accounts[2]});
-    } catch (error) {
-      return assertJump(error);
-    }
-    assert.fail('should have thrown before');
   });
 
   it('should not allow to set ETH price provider by not owner', async function () {
@@ -190,15 +152,6 @@ contract('DirectCryptTokenPreICO', function (accounts) {
   it('should not allow to update eth price with zero value', async function () {
     try {
       await this.crowdsale.receiveEthPrice(0, {from: ethPriceProvider});
-    } catch (error) {
-      return assertJump(error);
-    }
-    assert.fail('should have thrown before');
-  });
-
-  it('should not allow to update btc price with zero value', async function () {
-    try {
-      await this.crowdsale.receiveBtcPrice(0, {from: btcPriceProvider});
     } catch (error) {
       return assertJump(error);
     }

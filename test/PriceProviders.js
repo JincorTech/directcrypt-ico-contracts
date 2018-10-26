@@ -1,5 +1,4 @@
 const EthPriceProvider = artifacts.require("EthPriceProvider");
-const BtcPriceProvider = artifacts.require("BtcPriceProvider");
 
 const assertJump = function(error) {
   assert.isAbove(error.message.search('VM Exception while processing transaction: revert'), -1, 'Invalid opcode error must be returned');
@@ -8,7 +7,6 @@ const assertJump = function(error) {
 contract('EthPriceProvider', function (accounts) {
   beforeEach(async function () {
     this.ethPriceProvider = await EthPriceProvider.new();
-    this.btcPriceProvider = await BtcPriceProvider.new();
   });
 
   afterEach(async function () {
@@ -17,20 +15,11 @@ contract('EthPriceProvider', function (accounts) {
     } catch (e) {
 
     }
-
-    try {
-      await this.btcPriceProvider.stopUpdate();
-    } catch (e) {
-
-    }
   });
 
   it('should set correct URL', async function () {
     const ethUrl = await this.ethPriceProvider.url();
     assert.equal("json(https://api.kraken.com/0/public/Ticker?pair=ETHUSD).result.XETHZUSD.c.0", ethUrl);
-
-    const btcUrl = await this.btcPriceProvider.url();
-    assert.equal("json(https://api.kraken.com/0/public/Ticker?pair=XBTUSD).result.XXBTZUSD.c.0", btcUrl);
   });
 
   it('should be created with stopped state', async function () {
