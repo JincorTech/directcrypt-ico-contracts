@@ -1,18 +1,18 @@
 var SafeMath = artifacts.require('./SafeMath.sol');
-var MyPizzaPieToken = artifacts.require("./MyPizzaPieToken.sol");
-var MyPizzaPieTokenPreSale = artifacts.require("./MyPizzaPieTokenPreSale.sol");
+var DirectCryptToken = artifacts.require("./DirectCryptToken.sol");
+var DirectCryptTokenPreSale = artifacts.require("./DirectCryptTokenPreSale.sol");
 var EthPriceProvider = artifacts.require("./EthPriceProvider.sol");
 var BtcPriceProvider = artifacts.require("./BtcPriceProvider.sol");
 var InvestorWhiteList = artifacts.require("./InvestorWhiteList.sol");
 
 module.exports = async function(deployer) {
   await deployer.deploy(SafeMath);
-  deployer.link(SafeMath, MyPizzaPieToken);
-  deployer.link(SafeMath, MyPizzaPieTokenPreSale);
-  await deployer.deploy(MyPizzaPieToken).then(async function() {
+  deployer.link(SafeMath, DirectCryptToken);
+  deployer.link(SafeMath, DirectCryptTokenPreSale);
+  await deployer.deploy(DirectCryptToken).then(async function() {
     const hardCap = 2000000000; //in cents
     const softCap = 200000000; //in cents
-    const token = MyPizzaPieToken.address;
+    const token = DirectCryptToken.address;
     const totalTokens = 8700000; //NOT in wei, converted by contract
     const beneficiary = web3.eth.accounts[0];
     const baseEthUsdPrice = 50000; //in cents
@@ -24,7 +24,7 @@ module.exports = async function(deployer) {
     const startTime = Date.now() / 1000;
     const endTime = startTime + 3600 * 24 * 5;
     await deployer.deploy(InvestorWhiteList);
-    await deployer.deploy(MyPizzaPieTokenPreSale,
+    await deployer.deploy(DirectCryptTokenPreSale,
       hardCap,
       softCap,
       token,
@@ -43,14 +43,14 @@ module.exports = async function(deployer) {
     await deployer.deploy(EthPriceProvider);
     await deployer.deploy(BtcPriceProvider);
 
-    const preSaleInstance = await web3.eth.contract(MyPizzaPieTokenPreSale.abi).at(MyPizzaPieTokenPreSale.address);
+    const preSaleInstance = await web3.eth.contract(DirectCryptTokenPreSale.abi).at(DirectCryptTokenPreSale.address);
     const ethProvider = await web3.eth.contract(EthPriceProvider.abi).at(EthPriceProvider.address);
     const btcProvider = await web3.eth.contract(BtcPriceProvider.abi).at(BtcPriceProvider.address);
 
     await preSaleInstance.setEthPriceProvider(EthPriceProvider.address, { from: web3.eth.accounts[0] });
     await preSaleInstance.setBtcPriceProvider(BtcPriceProvider.address, { from: web3.eth.accounts[0] });
-    await ethProvider.setWatcher(MyPizzaPieTokenPreSale.address, { from: web3.eth.accounts[0] });
-    await btcProvider.setWatcher(MyPizzaPieTokenPreSale.address, { from: web3.eth.accounts[0] });
+    await ethProvider.setWatcher(DirectCryptTokenPreSale.address, { from: web3.eth.accounts[0] });
+    await btcProvider.setWatcher(DirectCryptTokenPreSale.address, { from: web3.eth.accounts[0] });
 
     //start update and send ETH to cover Oraclize fees
     await ethProvider.startUpdate(30000, { value: web3.toWei(1000), from: web3.eth.accounts[0], gas: 200000 });

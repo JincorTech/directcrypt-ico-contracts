@@ -3,20 +3,23 @@ pragma solidity ^0.4.11;
 import "./Haltable.sol";
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
-import "./MyPizzaPieToken.sol";
+import "./DirectCryptToken.sol";
 import "./InvestorWhiteList.sol";
 import "./abstract/PriceReceiver.sol";
 
 
-contract MyPizzaPieTokenPreSale is Haltable, PriceReceiver {
+contract DirectCryptTokenPreSale is Haltable, PriceReceiver {
   using SafeMath for uint;
 
-  string public constant name = "MyPizzaPie Token PreSale";
-  uint public VOLUME_50 = 5 ether;
-  uint public VOLUME_40 = 1 ether;
-  uint public VOLUME_30 = 0.5 ether;
+  string public constant name = "Direct Crypt Token PreSale";
 
-  MyPizzaPieToken public token;
+  uint public VOLUME_70 = 20.00 ether;
+  uint public VOLUME_60 = 10.00 ether;
+  uint public VOLUME_50 = 1.00 ether;
+  uint public VOLUME_25 = 0.01 ether;
+  uint public VOLUME_05 = 0.001 ether;
+
+  DirectCryptToken public token;
   InvestorWhiteList public investorWhiteList;
 
   address public beneficiary;
@@ -66,7 +69,7 @@ contract MyPizzaPieTokenPreSale is Haltable, PriceReceiver {
     _;
   }
 
-  function MyPizzaPieTokenPreSale(
+  function DirectCryptTokenPreSale(
     uint _hardCapETH,
     uint _softCapETH,
 
@@ -92,15 +95,12 @@ contract MyPizzaPieTokenPreSale is Haltable, PriceReceiver {
     hardCap = _hardCapETH.mul(1 ether);
     softCap = _softCapETH.mul(1 ether);
 
-    token = MyPizzaPieToken(_token);
+    token = DirectCryptToken(_token);
     investorWhiteList = InvestorWhiteList(_investorWhiteList);
     beneficiary = _beneficiary;
 
     startTime = _startTime;
     endTime = _endTime;
-
-    Timestamp(block.timestamp);
-    Timestamp(startTime);
   }
 
   function() payable inWhiteList {
@@ -183,12 +183,16 @@ contract MyPizzaPieTokenPreSale is Haltable, PriceReceiver {
   }
 
   function calculateBonus(uint value) private returns (uint bonus) {
-    if (value >= VOLUME_50) {
+    if (value >= VOLUME_70) {
+      return 70;
+    } else if (value >= VOLUME_60) {
+      return 60;
+    } else if (value >= VOLUME_50) {
       return 50;
-    } else if (value >= VOLUME_40) {
-      return 40;
-    } else if (value >= VOLUME_30) {
-      return 30;
+    } else if (value >= VOLUME_25) {
+      return 25;
+    } else if (value >= VOLUME_05) {
+      return 5;
     }
 
     return 0;

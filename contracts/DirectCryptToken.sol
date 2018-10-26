@@ -4,16 +4,16 @@ import "./Burnable.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
 /**
- * @title MyPizzaPieToken
+ * @title DirectCryptToken
  *
  * @dev Burnable Ownable ERC20 token
  */
-contract MyPizzaPieToken is Burnable, Ownable {
+contract DirectCryptToken is Burnable, Ownable {
 
-  string public constant name = "MyPizzaPie Token";
-  string public constant symbol = "PZA";
+  string public constant name = "Direct Crypt Token";
+  string public constant symbol = "DRCT";
   uint8 public constant decimals = 18;
-  uint public constant INITIAL_SUPPLY = 81192000 * 1 ether;
+  uint public constant INITIAL_SUPPLY = 500000000 * 1 ether;
 
   /* The finalizer contract that allows unlift the transfer limits on this token */
   address public releaseAgent;
@@ -49,7 +49,7 @@ contract MyPizzaPieToken is Burnable, Ownable {
   /**
    * @dev Constructor that gives msg.sender all of existing tokens.
    */
-  function MyPizzaPieToken() {
+  function DirectCryptToken() {
     totalSupply_ = INITIAL_SUPPLY;
     balances[msg.sender] = INITIAL_SUPPLY;
   }

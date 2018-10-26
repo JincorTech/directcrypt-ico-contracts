@@ -3,33 +3,33 @@ pragma solidity ^0.4.11;
 import "./Haltable.sol";
 import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "zeppelin-solidity/contracts/ownership/Ownable.sol";
-import "./MyPizzaPieToken.sol";
+import "./DirectCryptToken.sol";
 import "./InvestorWhiteList.sol";
 import "./abstract/PriceReceiver.sol";
 
-contract MyPizzaPieTokenICO is Haltable, PriceReceiver {
+
+contract DirectCryptTokenPreICO is Haltable, PriceReceiver {
   using SafeMath for uint;
 
-  string public constant name = "MyPizzaPie Token ICO";
+  string public constant name = "Direct Crypt Token PreICO";
 
-  MyPizzaPieToken public token;
-
-  address public beneficiary;
-
-  address public constant preSaleAddress = 0x949C9B8dFf9b264CAD57F69Cd98ECa1338F05B39;
-
+  DirectCryptToken public token;
   InvestorWhiteList public investorWhiteList;
 
-  uint public constant pzaUsdRate = 100; //in cents
-
-  uint public ethUsdRate;
-  uint public btcUsdRate;
+  address public beneficiary;
 
   uint public hardCap;
   uint public softCap;
 
+  uint public ethUsdRate;
+  uint public btcUsdRate;
+
+  uint public tokenPriceUsd;
+  uint public totalTokens;//in wei
+
   uint public collected = 0;
   uint public tokensSold = 0;
+  uint public investorCount = 0;
   uint public weiRefunded = 0;
 
   uint public startTime;
@@ -38,30 +38,23 @@ contract MyPizzaPieTokenICO is Haltable, PriceReceiver {
   bool public softCapReached = false;
   bool public crowdsaleFinished = false;
 
-  uint public endOfFirstDecade;
-  uint public endOfSecondDecade;
-  uint public endOfThirdDecade;
-  uint public endOfFourthDecade;
-
+  mapping (address => bool) public refunded;
   mapping (address => uint) public deposited;
 
   event SoftCapReached(uint softCap);
   event NewContribution(address indexed holder, uint tokenAmount, uint etherAmount);
   event NewReferralTransfer(address indexed investor, address indexed referral, uint tokenAmount);
   event Refunded(address indexed holder, uint amount);
+  event Deposited(address indexed holder, uint amount);
+  event Amount(uint amount);
 
-  modifier icoActive() {
+  modifier preSaleActive() {
     require(block.timestamp >= startTime && block.timestamp < endTime);
     _;
   }
 
-  modifier icoEnded() {
+  modifier preSaleEnded() {
     require(block.timestamp >= endTime);
-    _;
-  }
-
-  modifier minInvestment() {
-    require(msg.value >= 0.1 * 1 ether);
     _;
   }
 
@@ -70,7 +63,7 @@ contract MyPizzaPieTokenICO is Haltable, PriceReceiver {
     _;
   }
 
-  function MyPizzaPieTokenICO(
+  function DirectCryptTokenPreICO(
     uint _hardCapETH,
     uint _softCapETH,
 
@@ -78,47 +71,47 @@ contract MyPizzaPieTokenICO is Haltable, PriceReceiver {
     address _beneficiary,
     address _investorWhiteList,
 
+    uint _totalTokens,
+    uint _tokenPriceUsd,
+
     uint _baseEthUsdPrice,
     uint _baseBtcUsdPrice,
 
     uint _startTime,
-    uint _endOfFirstDecade,
-    uint _endOfSecondDecade,
-    uint _endOfThirdDecade,
     uint _endTime
   ) {
+    ethUsdRate = _baseEthUsdPrice;
+    btcUsdRate = _baseBtcUsdPrice;
+    tokenPriceUsd = _tokenPriceUsd;
+
+    totalTokens = _totalTokens.mul(1 ether);
+
     hardCap = _hardCapETH.mul(1 ether);
     softCap = _softCapETH.mul(1 ether);
 
-    token = MyPizzaPieToken(_token);
-    beneficiary = _beneficiary;
+    token = DirectCryptToken(_token);
     investorWhiteList = InvestorWhiteList(_investorWhiteList);
+    beneficiary = _beneficiary;
 
     startTime = _startTime;
-    endOfFirstDecade = _endOfFirstDecade;
-    endOfSecondDecade = _endOfSecondDecade;
-    endOfThirdDecade = _endOfThirdDecade;
-    endOfFourthDecade = _endTime;
     endTime = _endTime;
-
-    ethUsdRate = _baseEthUsdPrice;
-    btcUsdRate = _baseBtcUsdPrice;
   }
 
-  function() payable minInvestment inWhiteList {
-    doPurchase();
+  function() payable inWhiteList {
+    doPurchase(msg.sender);
   }
 
-  function refund() external icoEnded {
+  function refund() external preSaleEnded inNormalState {
     require(softCapReached == false);
-    require(deposited[msg.sender] > 0);
+    require(refunded[msg.sender] == false);
 
     uint refund = deposited[msg.sender];
+    require(refund > 0);
 
     deposited[msg.sender] = 0;
-    msg.sender.transfer(refund);
-
+    refunded[msg.sender] = true;
     weiRefunded = weiRefunded.add(refund);
+    msg.sender.transfer(refund);
     Refunded(msg.sender, refund);
   }
 
@@ -154,26 +147,13 @@ contract MyPizzaPieTokenICO is Haltable, PriceReceiver {
     investorWhiteList = InvestorWhiteList(newWhiteList);
   }
 
-  function transferOwnership(address newOwner) onlyOwner icoEnded {
-    super.transferOwnership(newOwner);
-  }
-
-  function doPurchase() private icoActive inNormalState {
+  function doPurchase(address _owner) private preSaleActive inNormalState {
     require(!crowdsaleFinished);
-
-    uint tokens = msg.value.mul(ethUsdRate).div(pzaUsdRate);
-    tokens = tokens.add(calculateBonus(tokens));
-
-    uint newTokensSold = tokensSold.add(tokens);
-
-    uint referralBonus = calculateReferralBonus(tokens);
-    address referral = investorWhiteList.getReferralOf(msg.sender);
-
-    if (referralBonus > 0 && referral != 0x0) {
-      newTokensSold = newTokensSold.add(referralBonus);
-    }
-
     require(collected.add(msg.value) <= hardCap);
+
+    uint tokens = msg.value.mul(ethUsdRate).div(tokenPriceUsd);
+
+    require(totalTokens >= tokensSold + tokens);
 
     if (!softCapReached
       && collected < softCap
@@ -183,14 +163,24 @@ contract MyPizzaPieTokenICO is Haltable, PriceReceiver {
       SoftCapReached(softCap);
     }
 
-    collected = collected.add(msg.value);
+    if (token.balanceOf(msg.sender) == 0) investorCount++;
+
+    address referral = investorWhiteList.getReferralOf(msg.sender);
+    uint referralBonus = calculateReferralBonus(tokens);
+
+    uint newTokensSold = tokensSold.add(tokens);
+
+    if (referralBonus > 0 && referral != 0x0) {
+      newTokensSold = newTokensSold.add(referralBonus);
+    }
 
     tokensSold = newTokensSold;
 
+    collected = collected.add(msg.value);
     deposited[msg.sender] = deposited[msg.sender].add(msg.value);
 
     token.transfer(msg.sender, tokens);
-    NewContribution(msg.sender, tokens, msg.value);
+    NewContribution(_owner, tokens, msg.value);
 
     if (referralBonus > 0 && referral != 0x0) {
       token.transfer(referral, referralBonus);
@@ -198,19 +188,7 @@ contract MyPizzaPieTokenICO is Haltable, PriceReceiver {
     }
   }
 
-  function calculateReferralBonus(uint tokens) private returns(uint bonus) {
+  function calculateReferralBonus(uint tokens) private returns (uint) {
     return tokens.mul(5).div(100);
-  }
-
-  function calculateBonus(uint tokens) internal constant returns (uint bonus) {
-    if (block.timestamp >= startTime && block.timestamp < endOfFirstDecade) {
-      return tokens.mul(20).div(100);
-    } else if (block.timestamp >= endOfFirstDecade && block.timestamp < endOfSecondDecade) {
-      return tokens.mul(15).div(100);
-    } else if (block.timestamp >= endOfSecondDecade && block.timestamp < endOfThirdDecade) {
-      return tokens.mul(10).div(100);
-    } else if (block.timestamp >= endOfThirdDecade && block.timestamp < endOfFourthDecade) {
-      return tokens.mul(5).div(100);
-    }
   }
 }

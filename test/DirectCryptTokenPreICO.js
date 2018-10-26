@@ -1,5 +1,5 @@
-const MyPizzaPieToken = artifacts.require("MyPizzaPieToken");
-const MyPizzaPieTokenPreICO = artifacts.require("MyPizzaPieTokenPreICO");
+const DirectCryptToken = artifacts.require("DirectCryptToken");
+const DirectCryptTokenPreICO = artifacts.require("DirectCryptTokenPreICO");
 const InvestorWhiteList = artifacts.require("InvestorWhiteList");
 
 const assertJump = function(error) {
@@ -24,7 +24,7 @@ async function increaseTimestampBy(seconds) {
   await send('evm_mine');
 }
 
-contract('MyPizzaPieTokenPreICO', function (accounts) {
+contract('DirectCryptTokenPreICO', function (accounts) {
   beforeEach(async function () {
     this.block = await web3.eth.getBlock(await web3.eth.blockNumber);
     this.startTime = this.block.timestamp;
@@ -32,9 +32,9 @@ contract('MyPizzaPieTokenPreICO', function (accounts) {
 
     this.whiteList = await InvestorWhiteList.new();
 
-    this.token = await MyPizzaPieToken.new();
+    this.token = await DirectCryptToken.new();
 
-    this.crowdsale = await MyPizzaPieTokenPreICO.new(
+    this.crowdsale = await DirectCryptTokenPreICO.new(
       hardCap,
       softCap,
       this.token.address,

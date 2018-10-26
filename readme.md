@@ -1,38 +1,39 @@
-# MyPizzaPie ICO Contracts
+# Direct Crypt ICO Contracts
 
 Baked with <3 by [secret_tech](https://secrettech.io)
 
-## MyPizzaPie token properties (ERC20)
+## Direct Crypt Token properties (ERC20)
 
 - Price: $1.00
-- Name: MyPizzaPie Token
-- Ticker: PZA
+- Name: Direct Crypt Token
+- Ticker: DRCT
 - Decimals: 18
 - Automatic update of token rates every 12 hours
 
 ## Token emission
 
-- Total supply: 81,192,000
-- Sales pool is 28,892,000 (PreSale, Pre-ICO and ICO)
+- Total supply: 500,000,000
 
 ## Private PreSale stage
 
-- SoftCap: 500 ETH
-- HardCap: 28,500 ETH
+- SoftCap: 1000 ETH
+- HardCap: TBA ETH
 - Price token: $1.00
 
 ### Bonus
 
-- 50-99 ETH: +30% tokens
-- 100-499 ETH: +40% tokes
-- 500-1000 ETH: +50% tokens
+- (0.1-1):          +5%  tokens
+- [1-100) ETH:      +25% tokens
+- [100-1000) ETH:   +50% tokens
+- [1000-2000) ETH:  +60% tokens
+- >=2000 ETH:       +70% tokens
 
 ## PreICO stage
 
-- SoftCap: 2,500 ETH
-- HardCap: 28,500 ETH
-- Price token: $0.75 (discount 25%)
-- Period: 7 days
+- SoftCap: TBA ETH
+- HardCap: TBA ETH
+- Price token: TBA
+- Period: TBA
 
 ## ICO stage
 
