@@ -13,12 +13,6 @@ contract DirectCryptTokenPreSale is Haltable, PriceReceiver {
 
   string public constant name = "Direct Crypt Token PreSale";
 
-  uint public VOLUME_70 = 20.00 ether;
-  uint public VOLUME_60 = 10.00 ether;
-  uint public VOLUME_50 = 1.00 ether;
-  uint public VOLUME_25 = 0.01 ether;
-  uint public VOLUME_05 = 0.001 ether;
-
   DirectCryptToken public token;
   InvestorWhiteList public investorWhiteList;
 
@@ -50,8 +44,6 @@ contract DirectCryptTokenPreSale is Haltable, PriceReceiver {
   event NewContribution(address indexed holder, uint tokenAmount, uint etherAmount);
   event Refunded(address indexed holder, uint amount);
   event Deposited(address indexed holder, uint amount);
-  event Amount(uint amount);
-  event Timestamp(uint time);
 
   modifier preSaleActive() {
     require(now >= startTime && now < endTime);
@@ -151,11 +143,6 @@ contract DirectCryptTokenPreSale is Haltable, PriceReceiver {
     }
 
     uint tokens = msg.value.mul(ethUsdRate).div(tokenPriceUsd);
-    uint bonus = calculateBonus(msg.value);
-    
-    if (bonus > 0) {
-      tokens = tokens + tokens.mul(bonus).div(100);
-    }
 
     if (token.balanceOf(msg.sender) == 0) investorCount++;
 
@@ -167,21 +154,5 @@ contract DirectCryptTokenPreSale is Haltable, PriceReceiver {
     deposited[msg.sender] = deposited[msg.sender].add(msg.value);
     
     NewContribution(_owner, tokens, msg.value);
-  }
-
-  function calculateBonus(uint value) private returns (uint bonus) {
-    if (value >= VOLUME_70) {
-      return 70;
-    } else if (value >= VOLUME_60) {
-      return 60;
-    } else if (value >= VOLUME_50) {
-      return 50;
-    } else if (value >= VOLUME_25) {
-      return 25;
-    } else if (value >= VOLUME_05) {
-      return 5;
-    }
-
-    return 0;
   }
 }
