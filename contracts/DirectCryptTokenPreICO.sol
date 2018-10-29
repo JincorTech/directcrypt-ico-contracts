@@ -45,7 +45,6 @@ contract DirectCryptTokenPreICO is Haltable, PriceReceiver {
   event NewReferralTransfer(address indexed investor, address indexed referral, uint tokenAmount);
   event Refunded(address indexed holder, uint amount);
   event Deposited(address indexed holder, uint amount);
-  event Amount(uint amount);
 
   modifier preSaleActive() {
     require(block.timestamp >= startTime && block.timestamp < endTime);

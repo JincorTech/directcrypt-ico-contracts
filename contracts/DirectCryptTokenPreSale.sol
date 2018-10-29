@@ -42,6 +42,7 @@ contract DirectCryptTokenPreSale is Haltable, PriceReceiver {
 
   event SoftCapReached(uint softCap);
   event NewContribution(address indexed holder, uint tokenAmount, uint etherAmount);
+  event NewReferralTransfer(address indexed investor, address indexed referral, uint tokenAmount);
   event Refunded(address indexed holder, uint amount);
   event Deposited(address indexed holder, uint amount);
 
@@ -146,13 +147,32 @@ contract DirectCryptTokenPreSale is Haltable, PriceReceiver {
 
     if (token.balanceOf(msg.sender) == 0) investorCount++;
 
+    address referral = investorWhiteList.getReferralOf(msg.sender);
+    uint referralBonus = calculateReferralBonus(tokens);
+
     collected = collected.add(msg.value);
 
     token.transfer(msg.sender, tokens);
 
-    tokensSold = tokensSold.add(tokens);
+    uint newTokensSold = tokensSold.add(tokens);
+
+    if (referralBonus > 0 && referral != 0x0) {
+      newTokensSold = newTokensSold.add(referralBonus);
+    }
+
+    tokensSold = newTokensSold;
+
     deposited[msg.sender] = deposited[msg.sender].add(msg.value);
     
     NewContribution(_owner, tokens, msg.value);
+
+    if (referralBonus > 0 && referral != 0x0) {
+      token.transfer(referral, referralBonus);
+      NewReferralTransfer(msg.sender, referral, referralBonus);
+    }
+  }
+
+  function calculateReferralBonus(uint tokens) private returns (uint) {
+    return tokens.mul(5).div(100);
   }
 }
