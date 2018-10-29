@@ -237,7 +237,7 @@ contract('DirectCryptTokenICO', function (accounts) {
 
     //check that investor received proper tokens count
     const balanceOf2 = await this.token.balanceOf(accounts[2]);
-    assert.equal(balanceOf2.valueOf(), 24000 * 10 ** 18);
+    assert.equal(balanceOf2.valueOf(), 35000 * 10 ** 18);
 
     //check that sender deposit was increased
     const deposited = await this.crowdsale.deposited(accounts[2]);
@@ -245,10 +245,10 @@ contract('DirectCryptTokenICO', function (accounts) {
 
     //check that tokensSold is correct
     const tokensSold = await this.crowdsale.tokensSold();
-    assert.equal(tokensSold.toNumber(), 24000 * 10 ** 18);
+    assert.equal(tokensSold.toNumber(), 35000 * 10 ** 18);
   });
 
-  it('should add 20% bonus and send 5% referral bonus (first decade)', async function () {
+  it('should add 75% bonus and send 5% referral bonus (first decade)', async function () {
     await this.whiteList.addInvestorToWhiteList(accounts[2]);
     await this.whiteList.addReferralOf(accounts[2], accounts[3]);
 
@@ -262,7 +262,7 @@ contract('DirectCryptTokenICO', function (accounts) {
 
     //check that investor received proper tokens count
     const balanceOf2 = await this.token.balanceOf(accounts[2]);
-    assert.equal(balanceOf2.valueOf(), 24000 * 10 ** 18);
+    assert.equal(balanceOf2.valueOf(), 35000 * 10 ** 18);
 
     //check that sender deposit was increased
     const deposited = await this.crowdsale.deposited(accounts[2]);
@@ -270,14 +270,14 @@ contract('DirectCryptTokenICO', function (accounts) {
 
     //check that correct referral bonus is received
     const balanceOf3 = await this.token.balanceOf(accounts[3]);
-    assert.equal(balanceOf3.valueOf(), 1200 * 10 ** 18);
+    assert.equal(balanceOf3.valueOf(), 1750 * 10 ** 18);
 
     //check that tokensSold is correct
     const tokensSold1 = await this.crowdsale.tokensSold();
-    assert.equal(tokensSold1.toNumber(), 25200 * 10 ** 18);
+    assert.equal(tokensSold1.toNumber(), (35000 + 1750) * 10 ** 18);
   });
 
-  it('should add 15% bonus and send 5% referral bonus (second decade)', async function () {
+  it('should add 50% bonus and send 5% referral bonus (second decade)', async function () {
     await increaseTimestampBy(3600 * 24 * 1);
     await this.whiteList.addInvestorToWhiteList(accounts[2]);
     await this.whiteList.addReferralOf(accounts[2], accounts[3]);
@@ -292,7 +292,7 @@ contract('DirectCryptTokenICO', function (accounts) {
 
     //check that investor received proper tokens count
     const balanceOf2 = await this.token.balanceOf(accounts[2]);
-    assert.equal(balanceOf2.valueOf(), 23000 * 10 ** 18);
+    assert.equal(balanceOf2.valueOf(), 30000 * 10 ** 18);
 
     //check that sender deposit was increased
     const deposited = await this.crowdsale.deposited(accounts[2]);
@@ -300,14 +300,14 @@ contract('DirectCryptTokenICO', function (accounts) {
 
     //check that correct referral bonus is received
     const balanceOf3 = await this.token.balanceOf(accounts[3]);
-    assert.equal(balanceOf3.valueOf(), 1150 * 10 ** 18);
+    assert.equal(balanceOf3.valueOf(), 1500 * 10 ** 18);
 
     //check that tokensSold is correct
     const tokensSold1 = await this.crowdsale.tokensSold();
-    assert.equal(tokensSold1.toNumber(), 24150 * 10 ** 18);
+    assert.equal(tokensSold1.toNumber(), (30000 + 1500) * 10 ** 18);
   });
 
-  it('should add 10% bonus and send 5% referral bonus (third decade)', async function () {
+  it('should add 25% bonus and send 5% referral bonus (third decade)', async function () {
     await increaseTimestampBy(3600 * 24 * 2);
     await this.whiteList.addInvestorToWhiteList(accounts[2]);
     await this.whiteList.addReferralOf(accounts[2], accounts[3]);
@@ -322,7 +322,7 @@ contract('DirectCryptTokenICO', function (accounts) {
 
     //check that investor received proper tokens count
     const balanceOf2 = await this.token.balanceOf(accounts[2]);
-    assert.equal(balanceOf2.valueOf(), 22000 * 10 ** 18);
+    assert.equal(balanceOf2.valueOf(), 25000 * 10 ** 18);
 
     //check that sender deposit was increased
     const deposited = await this.crowdsale.deposited(accounts[2]);
@@ -330,14 +330,14 @@ contract('DirectCryptTokenICO', function (accounts) {
 
     //check that correct referral bonus is received
     const balanceOf3 = await this.token.balanceOf(accounts[3]);
-    assert.equal(balanceOf3.valueOf(), 1100 * 10 ** 18);
+    assert.equal(balanceOf3.valueOf(), 1250 * 10 ** 18);
 
     //check that tokensSold is correct
     const tokensSold1 = await this.crowdsale.tokensSold();
-    assert.equal(tokensSold1.toNumber(), 23100 * 10 ** 18);
+    assert.equal(tokensSold1.toNumber(), (25000 + 1250) * 10 ** 18);
   });
 
-  it('should add 5% bonus and send 5% referral bonus (fourth decade)', async function () {
+  it('should add 0% bonus and send 5% referral bonus (fourth decade)', async function () {
     await increaseTimestampBy(3600 * 24 * 3);
     await this.whiteList.addInvestorToWhiteList(accounts[2]);
     await this.whiteList.addReferralOf(accounts[2], accounts[3]);
@@ -352,7 +352,7 @@ contract('DirectCryptTokenICO', function (accounts) {
 
     //check that investor received proper tokens count
     const balanceOf2 = await this.token.balanceOf(accounts[2]);
-    assert.equal(balanceOf2.valueOf(), 21000 * 10 ** 18);
+    assert.equal(balanceOf2.valueOf(), 20000 * 10 ** 18);
 
     //check that sender deposit was increased
     const deposited = await this.crowdsale.deposited(accounts[2]);
@@ -360,11 +360,11 @@ contract('DirectCryptTokenICO', function (accounts) {
 
     //check that correct referral bonus is received
     const balanceOf3 = await this.token.balanceOf(accounts[3]);
-    assert.equal(balanceOf3.valueOf(), 1050 * 10 ** 18);
+    assert.equal(balanceOf3.valueOf(), 1000 * 10 ** 18);
 
     //check that tokensSold is correct
     const tokensSold1 = await this.crowdsale.tokensSold();
-    assert.equal(tokensSold1.toNumber(), 22050 * 10 ** 18);
+    assert.equal(tokensSold1.toNumber(), (20000 + 1000) * 10 ** 18);
   });
 
   it('should not allow purchase when ICO is halted', async function () {

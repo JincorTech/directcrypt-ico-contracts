@@ -37,10 +37,10 @@ contract DirectCryptTokenICO is Haltable, PriceReceiver {
   bool public softCapReached = false;
   bool public crowdsaleFinished = false;
 
-  uint public endOfFirstDecade;
-  uint public endOfSecondDecade;
-  uint public endOfThirdDecade;
-  uint public endOfFourthDecade;
+  uint public endOfFirstPeriod;
+  uint public endOfSecondPeriod;
+  uint public endOfThirdPeriod;
+  uint public endOfFourthPeriod;
 
   mapping (address => uint) public deposited;
 
@@ -80,9 +80,9 @@ contract DirectCryptTokenICO is Haltable, PriceReceiver {
     uint _baseEthUsdPrice,
 
     uint _startTime,
-    uint _endOfFirstDecade,
-    uint _endOfSecondDecade,
-    uint _endOfThirdDecade,
+    uint _endOfFirstPeriod,
+    uint _endOfSecondPeriod,
+    uint _endOfThirdPeriod,
     uint _endTime
   ) {
     hardCap = _hardCapETH.mul(1 ether);
@@ -93,10 +93,10 @@ contract DirectCryptTokenICO is Haltable, PriceReceiver {
     investorWhiteList = InvestorWhiteList(_investorWhiteList);
 
     startTime = _startTime;
-    endOfFirstDecade = _endOfFirstDecade;
-    endOfSecondDecade = _endOfSecondDecade;
-    endOfThirdDecade = _endOfThirdDecade;
-    endOfFourthDecade = _endTime;
+    endOfFirstPeriod = _endOfFirstPeriod;
+    endOfSecondPeriod = _endOfSecondPeriod;
+    endOfThirdPeriod = _endOfThirdPeriod;
+    endOfFourthPeriod = _endTime;
     endTime = _endTime;
 
     ethUsdRate = _baseEthUsdPrice;
@@ -190,14 +190,14 @@ contract DirectCryptTokenICO is Haltable, PriceReceiver {
   }
 
   function calculateBonus(uint tokens) internal constant returns (uint bonus) {
-    if (block.timestamp >= startTime && block.timestamp < endOfFirstDecade) {
-      return tokens.mul(20).div(100);
-    } else if (block.timestamp >= endOfFirstDecade && block.timestamp < endOfSecondDecade) {
-      return tokens.mul(15).div(100);
-    } else if (block.timestamp >= endOfSecondDecade && block.timestamp < endOfThirdDecade) {
-      return tokens.mul(10).div(100);
-    } else if (block.timestamp >= endOfThirdDecade && block.timestamp < endOfFourthDecade) {
-      return tokens.mul(5).div(100);
+    if (block.timestamp >= startTime && block.timestamp < endOfFirstPeriod) {
+      return tokens.mul(75).div(100);
+    } else if (block.timestamp >= endOfFirstPeriod && block.timestamp < endOfSecondPeriod) {
+      return tokens.mul(50).div(100);
+    } else if (block.timestamp >= endOfSecondPeriod && block.timestamp < endOfThirdPeriod) {
+      return tokens.mul(25).div(100);
+    } else if (block.timestamp >= endOfThirdPeriod && block.timestamp < endOfFourthPeriod) {
+      return tokens.mul(0).div(100);
     }
   }
 }

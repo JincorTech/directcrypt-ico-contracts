@@ -6,13 +6,13 @@ const assertJump = function(error) {
   assert.isAbove(error.message.search('VM Exception while processing transaction: revert'), -1, 'Invalid opcode error must be returned');
 };
 
-const hardCap = 100; //in ETH
-const softCap = 30; //in ETH
+const hardCap = 3500; //in ETH
+const softCap = 20; //in ETH
 const beneficiary = web3.eth.accounts[0];
-const baseEthUsdPrice = 50000; //in cents
+const baseEthUsdPrice = 20000; //in cents
 const ethPriceProvider = web3.eth.accounts[8];
 const tokenPriceUsd = 100; //in cents
-const totalTokens = 30000; //NOT in wei, converted by contract
+const totalTokens = 700000; //NOT in wei, converted by contract
 
 async function increaseTimestampBy(seconds) {
   const jsonrpc = '2.0';
@@ -190,10 +190,10 @@ contract('DirectCryptTokenPreICO', function (accounts) {
     await this.crowdsale.sendTransaction({value: 1 * 10 ** 18, from: accounts[2]});
 
     const balance = await this.token.balanceOf(accounts[2]);
-    assert.equal(balance.valueOf(), 500 * 10**18);
+    assert.equal(balance.valueOf(), 200 * 10**18);
 
     const crowdsaleBalance = await this.token.balanceOf(this.crowdsale.address);
-    assert.equal(crowdsaleBalance.valueOf(), (totalTokens - 500) * 10 ** 18);
+    assert.equal(crowdsaleBalance.valueOf(), (totalTokens - 200) * 10 ** 18);
 
     const collected = await this.crowdsale.collected();
     assert.equal(collected.valueOf(), 1 * 10 ** 18);
@@ -202,7 +202,7 @@ contract('DirectCryptTokenPreICO', function (accounts) {
     assert.equal(investorCount, 1);
 
     const tokensSold = await this.crowdsale.tokensSold();
-    assert.equal(tokensSold.valueOf(), 500 * 10 ** 18);
+    assert.equal(tokensSold.valueOf(), 200 * 10 ** 18);
   });
 
   it('should not allow purchase when pre sale is halted', async function () {
@@ -221,10 +221,8 @@ contract('DirectCryptTokenPreICO', function (accounts) {
   it('should not allow to exceed purchase limit token', async function () {
     await this.whiteList.addInvestorToWhiteList(accounts[2]);
 
-    const amount = tokenPriceUsd/baseEthUsdPrice * (totalTokens + 1) * 10 ** 18;
-
     try {
-      await this.crowdsale.sendTransaction({value: amount, from: accounts[2]});
+      await this.crowdsale.sendTransaction({value: 3501 * 10**18, from: accounts[2]});
     } catch (error) {
       return assertJump(error);
     }
@@ -234,8 +232,8 @@ contract('DirectCryptTokenPreICO', function (accounts) {
   it('should allow to exceed purchase limit token', async function () {
     await this.whiteList.addInvestorToWhiteList(accounts[2]);
 
-    const amount = ((tokenPriceUsd * 10 ** 18)/baseEthUsdPrice) * totalTokens;
-    await this.crowdsale.sendTransaction({value: amount, from: accounts[2]});
+    await this.crowdsale.sendTransaction({value: 3500 * 10**18, from: accounts[2]});
+
     const balance = await this.token.balanceOf(accounts[2]);
     assert.equal(balance.valueOf(), totalTokens * 10**18);
   });
@@ -431,10 +429,10 @@ contract('DirectCryptTokenPreICO', function (accounts) {
     });
 
     const balanceOf2 = await this.token.balanceOf(accounts[2]);
-    assert.equal(balanceOf2.valueOf(), 500 * 10 ** 18);
+    assert.equal(balanceOf2.valueOf(), 200 * 10 ** 18);
 
     const balanceOf3 = await this.token.balanceOf(accounts[3]);
-    assert.equal(balanceOf3.valueOf(), 25 * 10**18);
+    assert.equal(balanceOf3.valueOf(), 200 * 0.05 * 10**18);
   });
 
   it('should not add referral bonus to tokensSold if no referral of investor', async function () {
@@ -447,7 +445,7 @@ contract('DirectCryptTokenPreICO', function (accounts) {
 
     //check that investor received proper tokens count
     const balanceOf2 = await this.token.balanceOf(accounts[2]);
-    assert.equal(balanceOf2.valueOf(), 500 * 10 ** 18);
+    assert.equal(balanceOf2.valueOf(), 200 * 10 ** 18);
 
     //check that sender deposit was increased
     const deposited = await this.crowdsale.deposited(accounts[2]);
@@ -455,6 +453,6 @@ contract('DirectCryptTokenPreICO', function (accounts) {
 
     //check that tokensSold is correct
     const tokensSold = await this.crowdsale.tokensSold();
-    assert.equal(tokensSold.toNumber(), 500 * 10 ** 18);
+    assert.equal(tokensSold.toNumber(), 200 * 10 ** 18);
   });
 });
