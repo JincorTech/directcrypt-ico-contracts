@@ -12,6 +12,8 @@ contract DirectCryptTokenICO is Haltable, PriceReceiver {
 
   string public constant name = "Direct Crypt Token ICO";
 
+  uint public constant REFERRAL_MIN_LIMIT = 10 ether;
+
   DirectCryptToken public token;
 
   address public beneficiary;
@@ -153,7 +155,11 @@ contract DirectCryptTokenICO is Haltable, PriceReceiver {
 
     uint newTokensSold = tokensSold.add(tokens);
 
-    uint referralBonus = calculateReferralBonus(tokens);
+    uint referralBonus = 0;
+    if (msg.value >= REFERRAL_MIN_LIMIT) {
+      referralBonus = calculateReferralBonus(tokens);
+    }
+
     address referral = investorWhiteList.getReferralOf(msg.sender);
 
     if (referralBonus > 0 && referral != 0x0) {

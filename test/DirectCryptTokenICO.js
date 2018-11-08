@@ -248,6 +248,35 @@ contract('DirectCryptTokenICO', function (accounts) {
     assert.equal(tokensSold.toNumber(), 35000 * 10 ** 18);
   });
 
+  it('should add 75% bonus and not send 5% referral bonus (first decade)', async function () {
+    await this.whiteList.addInvestorToWhiteList(accounts[2]);
+    await this.whiteList.addReferralOf(accounts[2], accounts[3]);
+
+    await this.whiteList.addInvestorToWhiteList(accounts[4]);
+    await this.whiteList.addReferralOf(accounts[4], accounts[5]);
+
+    await this.crowdsale.sendTransaction({
+      value: 1 * 10 ** 18,
+      from: accounts[2],
+    });
+
+    //check that investor received proper tokens count
+    const balanceOf2 = await this.token.balanceOf(accounts[2]);
+    assert.equal(balanceOf2.valueOf(), 350 * 10 ** 18);
+
+    //check that sender deposit was increased
+    const deposited = await this.crowdsale.deposited(accounts[2]);
+    assert.equal(deposited.toNumber(), 1 * 10 ** 18);
+
+    //check that correct referral bonus is received
+    const balanceOf3 = await this.token.balanceOf(accounts[3]);
+    assert.equal(balanceOf3.valueOf(), 0);
+
+    //check that tokensSold is correct
+    const tokensSold1 = await this.crowdsale.tokensSold();
+    assert.equal(tokensSold1.toNumber(), 350 * 10 ** 18);
+  });
+
   it('should add 75% bonus and send 5% referral bonus (first decade)', async function () {
     await this.whiteList.addInvestorToWhiteList(accounts[2]);
     await this.whiteList.addReferralOf(accounts[2], accounts[3]);

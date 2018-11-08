@@ -205,7 +205,7 @@ contract('DirectCryptTokenPresale', function (accounts) {
     assert.equal(tokensSold.valueOf(), 4000 * 10**18);
   });
 
-  it('should send tokens to purchaser and send 5% referral bonus', async function () {
+  it('should not send tokens to purchaser and send 5% referral bonus', async function () {
     await this.whiteList.addInvestorToWhiteList(accounts[2]);
     await this.whiteList.addReferralOf(accounts[2], accounts[3]);
 
@@ -215,10 +215,10 @@ contract('DirectCryptTokenPresale', function (accounts) {
     assert.equal(balance.valueOf(), 4000 * 10**18);
 
     const referralBalance = await this.token.balanceOf(accounts[3]);
-    assert.equal(referralBalance.valueOf(), 200 * 10**18);
+    assert.equal(referralBalance.valueOf(), 0);
 
     const crowdsaleBalance = await this.token.balanceOf(this.crowdsale.address);
-    assert.equal(crowdsaleBalance.valueOf(), (totalTokens - (4000 + 200)) * 10**18);
+    assert.equal(crowdsaleBalance.valueOf(), (totalTokens - 4000) * 10**18);
 
     const collected = await this.crowdsale.collected();
     assert.equal(collected.valueOf(), 1 * 10**18);
@@ -227,7 +227,32 @@ contract('DirectCryptTokenPresale', function (accounts) {
     assert.equal(investorCount, 1);
 
     const tokensSold = await this.crowdsale.tokensSold();
-    assert.equal(tokensSold.valueOf(), (4000 + 200) * 10**18);
+    assert.equal(tokensSold.valueOf(), 4000 * 10**18);
+  });
+
+  it('should send tokens to purchaser and send 5% referral bonus', async function () {
+    await this.whiteList.addInvestorToWhiteList(accounts[2]);
+    await this.whiteList.addReferralOf(accounts[2], accounts[3]);
+
+    await this.crowdsale.sendTransaction({value: 10 * 10**18, from: accounts[2]});
+
+    const balance = await this.token.balanceOf(accounts[2]);
+    assert.equal(balance.valueOf(), 40000 * 10**18);
+
+    const referralBalance = await this.token.balanceOf(accounts[3]);
+    assert.equal(referralBalance.valueOf(), 2000 * 10**18);
+
+    const crowdsaleBalance = await this.token.balanceOf(this.crowdsale.address);
+    assert.equal(crowdsaleBalance.valueOf(), (totalTokens - (40000 + 2000)) * 10**18);
+
+    const collected = await this.crowdsale.collected();
+    assert.equal(collected.valueOf(), 10 * 10**18);
+
+    const investorCount = await this.crowdsale.investorCount();
+    assert.equal(investorCount, 1);
+
+    const tokensSold = await this.crowdsale.tokensSold();
+    assert.equal(tokensSold.valueOf(), (40000 + 2000) * 10**18);
   });
 
   it('should not allow purchase when pre sale is halted', async function () {

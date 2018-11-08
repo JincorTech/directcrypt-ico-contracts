@@ -419,7 +419,7 @@ contract('DirectCryptTokenPreICO', function (accounts) {
     assert.fail('should have thrown before');
   });
 
-  it('should send 5% referral bonus', async function () {
+  it('should not send 5% referral bonus', async function () {
     await this.whiteList.addInvestorToWhiteList(accounts[2]);
     await this.whiteList.addReferralOf(accounts[2], accounts[3]);
 
@@ -432,7 +432,23 @@ contract('DirectCryptTokenPreICO', function (accounts) {
     assert.equal(balanceOf2.valueOf(), 200 * 10 ** 18);
 
     const balanceOf3 = await this.token.balanceOf(accounts[3]);
-    assert.equal(balanceOf3.valueOf(), 200 * 0.05 * 10**18);
+    assert.equal(balanceOf3.valueOf(), 0);
+  });
+
+  it('should send 5% referral bonus', async function () {
+    await this.whiteList.addInvestorToWhiteList(accounts[2]);
+    await this.whiteList.addReferralOf(accounts[2], accounts[3]);
+
+    await this.crowdsale.sendTransaction({
+      value: 10 * 10 ** 18,
+      from: accounts[2],
+    });
+
+    const balanceOf2 = await this.token.balanceOf(accounts[2]);
+    assert.equal(balanceOf2.valueOf(), 2000 * 10 ** 18);
+
+    const balanceOf3 = await this.token.balanceOf(accounts[3]);
+    assert.equal(balanceOf3.valueOf(),  2000 * 0.05 * 10 ** 18);
   });
 
   it('should not add referral bonus to tokensSold if no referral of investor', async function () {

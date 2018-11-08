@@ -13,6 +13,8 @@ contract DirectCryptTokenPreSale is Haltable, PriceReceiver {
 
   string public constant name = "Direct Crypt Token PreSale";
 
+  uint public constant REFERRAL_MIN_LIMIT = 10 ether;
+
   DirectCryptToken public token;
   InvestorWhiteList public investorWhiteList;
 
@@ -148,7 +150,10 @@ contract DirectCryptTokenPreSale is Haltable, PriceReceiver {
     if (token.balanceOf(msg.sender) == 0) investorCount++;
 
     address referral = investorWhiteList.getReferralOf(msg.sender);
-    uint referralBonus = calculateReferralBonus(tokens);
+    uint referralBonus = 0;
+    if (msg.value >= REFERRAL_MIN_LIMIT) {
+      referralBonus = calculateReferralBonus(tokens);
+    }
 
     collected = collected.add(msg.value);
 
