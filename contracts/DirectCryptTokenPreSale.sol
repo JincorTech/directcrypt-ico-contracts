@@ -13,7 +13,7 @@ contract DirectCryptTokenPreSale is Haltable, PriceReceiver {
 
   string public constant name = "Direct Crypt Token PreSale";
 
-  uint public constant REFERRAL_MIN_LIMIT = 10 ether;
+  uint public constant REFERRAL_MIN_LIMIT = 2 ether;
 
   DirectCryptToken public token;
   InvestorWhiteList public investorWhiteList;
